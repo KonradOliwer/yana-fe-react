@@ -1,10 +1,10 @@
 import NotesListSidebar from './NotesList';
-import NoteArea from './NoteArea';
-import { useEffect, useState } from 'react';
-import { Note } from './Note';
+import NotePage from './note/NotePage';
+import React, { useEffect, useState } from 'react';
+import { Note } from './note/Note';
 
-export default function NotesArea() {
-  const [currentNoteId, setCurrentNoteId] = useState<string | null>(null);
+export default function NotesPage() {
+  const [currentNoteId, setCurrentNoteId] = useState<string | null>('1');
   const [notes, setNotes] = useState<Note[]>([]);
 
   useEffect(() => {
@@ -18,6 +18,6 @@ export default function NotesArea() {
 
   return <div>
     <NotesListSidebar notes={notes} setCurrentNoteId={setCurrentNoteId} />
-    <NoteArea note={selectedNote} />
+    <NotePage note={selectedNote} />
   </div>;
 }

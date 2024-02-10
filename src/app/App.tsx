@@ -1,14 +1,23 @@
 import React from 'react';
 import './App.css';
 import UserTopBar from './notes/MainTopBar';
-import NotesArea from './notes/NotesArea';
+import NotesPage from './notes/NotesPage';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import About from './about/about';
+import { NoPageFound } from './Errors';
 
 
 function App() {
+
   return (
     <div className="App">
       <UserTopBar />
-      <NotesArea />
+      <Routes>
+        <Route path="/" element={<Navigate to="/notes" />} />
+        <Route path="/notes" element={<NotesPage />} />
+        <Route path="/about" element={<About />} />
+        <Route path="*" element={<NoPageFound />} />
+      </Routes>
     </div>
   );
 }

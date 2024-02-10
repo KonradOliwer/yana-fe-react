@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Note } from './Note';
+import { Note } from './note/Note';
 
 
 export default function NotesList({ notes, setCurrentNoteId }: {
