@@ -15,6 +15,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/notes" />} />
         <Route path="/notes" element={<NotesPage />} />
+        <Route path="/notes/:noteId" element={<NotesPage />} />
         <Route path="/about" element={<About />} />
         <Route path="*" element={<NoPageFound />} />
       </Routes>
