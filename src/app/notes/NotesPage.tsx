@@ -19,12 +19,12 @@ export default function NotesPage() {
 
   return <div>
     <NotesListSidebar notes={notes} />
-    {selectedNote ? <NotePage note={selectedNote} /> : (
-      <div className="p-4 sm:ml-64">
-        <div className="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 mt-14">
-          No note selected
-        </div>
+
+
+    <div className="p-4 sm:ml-64">
+      <div className="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 mt-14">
+        {selectedNote ? <NotePage note={selectedNote} /> : (<>No note selected</>)}
       </div>
-    )}
+    </div>
   </div>;
 }
