@@ -38,5 +38,7 @@ export const deleteNote = async (id: string): Promise<void> => {
   const response = await fetch(`${HOST}/notes/${id}`, {
     method: 'DELETE'
   });
-  await response.json();
+  if (!response.ok) {
+    throw new Error('Failed to delete note');
+  }
 };
