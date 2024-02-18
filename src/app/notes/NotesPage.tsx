@@ -6,7 +6,7 @@ import { addNote, deleteNote, getNotes, Note, NoteApiClientError, NoteApiErrorCo
 
 export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
-  const [currentNote, setCurrentNote] = useState<Note | null>(null);
+  const [currentNote, setCurrentNote] = useState<Note | undefined>(undefined);
   const { noteId } = useParams() as { noteId: string | null };
   const navigate = useNavigate();
 
@@ -60,7 +60,7 @@ export default function NotesPage() {
       deleteNote(noteToDelete.id)
         .then(() => {
           if (noteToDelete.id === currentNote?.id) {
-            setCurrentNote(null);
+            setCurrentNote(undefined);
             navigate('/notes');
           }
         }).catch(error => {
@@ -69,13 +69,9 @@ export default function NotesPage() {
     }
   }
 
-  return <div>
-    <NotesListSidebar notes={notes} createNewNote={createNewNoteAndAddToList} deleteNote={deleteNoteAndRemoveFromList} changeCurrentNote={changeCurrentNote} />
-
-    <div className="p-4 sm:ml-64">
-      <div className="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 mt-14">
-        {currentNote ? <NotePage note={currentNote} /> : (<>No note selected</>)}
-      </div>
-    </div>
+  return <div className="fixed top-14 left-64 bottom-0 right-0">
+    <NotesListSidebar notes={notes} createNewNote={createNewNoteAndAddToList} deleteNote={deleteNoteAndRemoveFromList}
+                      changeCurrentNote={changeCurrentNote} />
+    <NotePage note={currentNote} />
   </div>;
 }
