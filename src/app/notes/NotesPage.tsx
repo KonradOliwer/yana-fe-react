@@ -2,7 +2,7 @@ import NotesListSidebar from './NotesList';
 import NotePage from './note/NotePage';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { addNote, deleteNote, getNotes, Note, NoteApiError, NoteApiErrorCode } from './api';
+import { addNote, deleteNote, getNotes, Note, NoteApiClientError, NoteApiErrorCode } from './api';
 
 export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -36,13 +36,13 @@ export default function NotesPage() {
       })
         .then(note => {
           changeCurrentNote(note);
-        }).catch((error: NoteApiError) => {
-        if (error.code === NoteApiErrorCode.NOTE_ALREADY_EXISTS) {
+        }).catch((error: NoteApiClientError) => {
+        if (error.code === NoteApiErrorCode.ALREADY_EXISTS) {
           console.info('Note already exists. Please refresh page to see it.');
           // TODO this should refresh list. Note we do not want to lose any currently opened and removed notes
         }
       }).catch(error => {
-        console.error('Unknown error', error);
+        console.error('Unknown error while creating note', error);
       });
     } else {
       changeCurrentNote(note);

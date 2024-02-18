@@ -2,19 +2,21 @@ const HOST = 'http://127.0.0.1:5000';
 
 
 export enum NoteApiErrorCode {
-  NOTE_ALREADY_EXISTS = 'NOTE_ALREADY_EXISTS',
+  NOT_FOUND = 'NOTE_NOT_FOUND',
+  BLANK_NAME = 'NOTE_WITH_BLANK_NAME',
+  ALREADY_EXISTS = 'NOTE_ALREADY_EXISTS',
+  NOT_MATCHING_URL_ID = 'NOT_MATCHING_URL_ID',
+
+  //default value
   UNKNOWN_NOTE_ERROR_CODE = 'UNKNOWN_NOTE_ERROR_CODE'
 }
 
 function getNoteApiErrorCode(value: string): NoteApiErrorCode {
-  if (Object.values(NoteApiErrorCode).includes(value as NoteApiErrorCode)) {
-    return value as NoteApiErrorCode;
-  }
-  return NoteApiErrorCode.UNKNOWN_NOTE_ERROR_CODE; // default value
+  return Object.values(NoteApiErrorCode).includes(value as NoteApiErrorCode) ? value as NoteApiErrorCode : NoteApiErrorCode.UNKNOWN_NOTE_ERROR_CODE;
 }
 
 
-export class NoteApiError extends Error {
+export class NoteApiClientError extends Error {
   code: string;
 
   constructor(responseJson: { message?: string, code: string }) {
@@ -24,6 +26,12 @@ export class NoteApiError extends Error {
 
     // This line is needed to restore the correct prototype chain.
     Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
+function throwClientErrorIfApplicable(status: number, body: any) {
+  if (status >= 400 && status < 500) {
+    throw new NoteApiClientError(typeof body === 'string' ? JSON.parse(body) : body);
   }
 }
 
@@ -51,14 +59,16 @@ export const addNote = async (body: { name: string, content: string }): Promise<
     if (typeof responseJson === 'string') {
       responseJson = JSON.parse(responseJson);
     }
-    throw new NoteApiError(responseJson);
+    throw new NoteApiClientError(responseJson);
   }
   return responseJson as Note;
 };
 
 export const getNote = async (id: string): Promise<Note> => {
   const response = await fetch(`${HOST}/notes/${id}`);
-  return await response.json() as Note;
+  let responseJson = await response.json();
+  // throwClientErrorIfApplicable(response.status, responseJson);
+  return responseJson as Note;
 };
 
 export const editNote = async (note: Note): Promise<Note> => {
@@ -69,14 +79,20 @@ export const editNote = async (note: Note): Promise<Note> => {
     },
     body: JSON.stringify(note)
   });
-  return await response.json() as Note;
+  if (response.status === 500) {
+    throw new Error('Server error2');
+  }
+  let responseJson = await response.json();
+  throwClientErrorIfApplicable(response.status, responseJson);
+  return responseJson as Note;
 };
 
 export const deleteNote = async (id: string): Promise<void> => {
   const response = await fetch(`${HOST}/notes/${id}`, {
     method: 'DELETE'
   });
-  if (!response.ok) {
-    throw new Error('Failed to delete note');
+  if (response.status !== 204) {
+    let responseJson = await response.json();
+    throwClientErrorIfApplicable(response.status, responseJson);
   }
 };
