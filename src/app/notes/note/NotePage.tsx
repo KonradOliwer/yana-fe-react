@@ -1,5 +1,6 @@
 import React from 'react';
-import { Note } from './Note';
+
+import { Note } from '../api';
 
 export default function NotePage({ note }: { note: Note }) {
   return (

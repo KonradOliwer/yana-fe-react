@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Note } from './note/Note';
+
+import { Note } from './api';
 
 
 export default function NotesList({ notes, createNewNote: createOrOpenNote, deleteNote, changeCurrentNote }: {
