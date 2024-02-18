@@ -46,6 +46,10 @@ export default function NotesPage() {
   }
 
   function deleteNoteAndRemoveFromList(id: string) {
+    const userConfirmation = window.confirm('Are you sure you want to delete this note?');
+    if (!userConfirmation) {
+      return;
+    }
     const noteToDelete = notes.find(note => note.id === id);
     if (noteToDelete) {
       setNotes(notes.filter(note => note.id !== id));
