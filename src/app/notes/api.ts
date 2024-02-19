@@ -71,7 +71,7 @@ export const getNote = async (id: string): Promise<Note> => {
   return responseJson as Note;
 };
 
-export const editNote = async (note: Note): Promise<Note> => {
+export const updateNote = async (note: Note): Promise<Note> => {
   const response = await fetch(`${HOST}/notes/${note.id}`, {
     method: 'PUT',
     headers: {
@@ -79,9 +79,6 @@ export const editNote = async (note: Note): Promise<Note> => {
     },
     body: JSON.stringify(note)
   });
-  if (response.status === 500) {
-    throw new Error('Server error2');
-  }
   let responseJson = await response.json();
   throwClientErrorIfApplicable(response.status, responseJson);
   return responseJson as Note;

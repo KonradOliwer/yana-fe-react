@@ -1,14 +1,27 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import MDEditor from '@uiw/react-md-editor';
 
 import { Note } from '../api';
-import { toast } from 'react-toastify';
 
-export default function NotePage({ note }: { note: Note | undefined }) {
-  const [name, setNameValue] = useState<string | undefined>(note?.name);
-  const [content, setContentValue] = useState<string | undefined>(note?.content);
+export default function NotePage({ note, saveNoteChanges }: {
+  note: Note | undefined,
+  saveNoteChanges: (nore: Note) => void
+}) {
+  const [name, setNameValue] = useState<string | undefined>('');
+  const [content, setContentValue] = useState<string | undefined>('');
+
+  useEffect(() => {
+    setNameValue(note?.name ? note?.name : '');
+    setContentValue(note?.content ? note?.content : '');
+  }, [note]);
+
+
+  function submitNoteChanges() {
+    saveNoteChanges({ id: note?.id, name: name, content: content } as Note);
+  }
+
   return (
-    <div className="p-4 sm:ml-64 mt-14 fixed top-0 left-0 bottom-0 right-0">
+    <div className="p-4 sm:ml-64 mt-14 fixed top-0 left-0 bottom-0 right-0" id={note?.id}>
       <div className="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 w-full h-full">
         {note ? (
           <div className="relative w-full h-full">
@@ -16,10 +29,14 @@ export default function NotePage({ note }: { note: Note | undefined }) {
               <div className="absolute top-3 left-3 right-28 text-4xl">
                 <input className="relative  w-full h-full flex-start focus:outline-0 placeholder:italic" type="text" value={name ? name : ''}
                        placeholder={name ? '' : 'Unnamed'}
-                       onChange={(e) => setNameValue(e.target.value)} />
+                       onChange={(e) => setNameValue(e.target.value)}
+                       onKeyDown={(e) => {
+                         if (e.key === 'Enter') submitNoteChanges();
+                       }}
+                />
               </div>
               <div className="absolute top-0 right-6  text-end text-4xl">
-                <button className="border-2 border-black rounded-2xl p-3 hover:bg-gray-100">
+                <button className="border-2 border-black rounded-2xl p-3 hover:bg-gray-100" onClick={e => submitNoteChanges()}>
                   <svg className="w-[48px] h-[48px] text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
                        viewBox="0 0 24 24">
                     <path fillRule="evenodd"

@@ -2,7 +2,7 @@ import NotesListSidebar from './NotesList';
 import NotePage from './note/NotePage';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { addNote, deleteNote, getNotes, Note, NoteApiClientError, NoteApiErrorCode } from './api';
+import { addNote, deleteNote, getNotes, Note, NoteApiClientError, NoteApiErrorCode, updateNote } from './api';
 
 export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -24,7 +24,6 @@ export default function NotesPage() {
 
   function changeCurrentNote(note: Note) {
     navigate(`/notes/${note.id}`);
-    setCurrentNote(note);
   }
 
   function createNewNoteAndAddToList(name: string) {
@@ -69,9 +68,28 @@ export default function NotesPage() {
     }
   }
 
+  function updateOrCreateNote(note: Note): void {
+    const noteIndex = notes.findIndex(n => n.id === note.id);
+    if (noteIndex !== -1) {
+      const newNotes = [...notes];
+      newNotes[noteIndex] = note;
+      setNotes(newNotes);
+    }
+    updateNote(note)
+      .catch((error: NoteApiClientError) => {
+        //TODO: this doesn't work - fix it; we get 404 thrown into logs and no more handling
+        if (error.code === NoteApiErrorCode.ALREADY_EXISTS) {
+          const userConfirmation = window.confirm('It seams this note was removed. Do you want to create new one with this data?');
+          if (userConfirmation) {
+            createNewNoteAndAddToList(note.name);
+          }
+        }
+      });
+  }
+
   return <div className="fixed top-14 left-64 bottom-0 right-0">
     <NotesListSidebar notes={notes} createNewNote={createNewNoteAndAddToList} deleteNote={deleteNoteAndRemoveFromList}
                       changeCurrentNote={changeCurrentNote} />
-    <NotePage note={currentNote} />
+    <NotePage note={currentNote} saveNoteChanges={updateOrCreateNote} />
   </div>;
 }
