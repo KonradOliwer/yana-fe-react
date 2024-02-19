@@ -2,7 +2,7 @@ import NotesListSidebar from './NotesList';
 import NotePage from './note/NotePage';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { addNote, deleteNote, getNoteByName, getNotes, Note, NoteApiClientError, NoteApiErrorCode, updateNote } from './api';
+import { addNote, deleteNote, getNotes, Note, NoteApiClientError, NoteApiErrorCode, updateNote } from './api';
 
 export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -29,38 +29,41 @@ export default function NotesPage() {
     }
   }, [noteId, notes]);
 
+  function createNewNote(name: string, content: string | undefined) {
+    addNote({
+      name: name.trim(),
+      content: content ? content : ''
+    }).then(addedNote => {
+      setNotes(ns => [...ns.filter(note => note.name !== addedNote.name), addedNote]);
+      navigate(`/notes/${addedNote.id}`);
+    }).catch((error: NoteApiClientError) => {
+      if (error.code === NoteApiErrorCode.ALREADY_EXISTS) {
+        // This could happen if:
+        // 1. user intentionally tries to break system by very quickly switching tabs and removing something in fly
+        // 2. user has connections issues
+        //TODO: system should support second case - display toastr with infor about issue
+        console.info('Note already exists. Please refresh page to see it.');
+      }
+    }).catch(error => {
+      console.error('Unknown error while creating note', error);
+    });
+  }
+
   function selectOrCreateNote(name: string, content: string | undefined) {
-    const note = notes.find(note => note.name === name.trim());
-    if (!note) {
-      getNoteByName(name.trim()).then(n => {
-        setNotes([...notes, n]);
-        setCurrentNote(n);
-        navigate(`/notes/${n.id}`);
-      }).catch((error: NoteApiClientError) => {
-        if (error.code !== NoteApiErrorCode.NOT_FOUND) {
-          console.error('Error fetching note', error);
-        }
-        addNote({
-          name: name.trim(),
-          content: content ? content : ''
-        }).then(n => {
-          setNotes([...notes, n]);
-          navigate(`/notes/${n.id}`);
-        }).catch((error: NoteApiClientError) => {
-          if (error.code === NoteApiErrorCode.ALREADY_EXISTS) {
-            // This could happen if:
-            // 1. user intentionally tries to break system by very quickly switching tabs and removing something in fly
-            // 2. user has connections issues
-            //TODO: system should support second case - display toastr with infor about issue
-            console.info('Note already exists. Please refresh page to see it.');
-          }
-        }).catch(error => {
-          console.error('Unknown error while creating note', error);
-        });
-      });
-    } else {
-      navigate(`/notes/${note.id}`);
-    }
+    let trimmedName = name.trim();
+    getNotes().then(ns => {
+      setNotes(ns);
+      let note = ns.find(note => note.name === trimmedName);
+      console.log('note', note);
+      if (note) {
+        setCurrentNote(note);
+        navigate(`/notes/${note.id}`);
+      } else {
+        createNewNote(trimmedName, content);
+      }
+    }).catch(error => {
+      console.error('Error fetching notes', error);
+    });
   }
 
   function deleteNoteAndRemoveFromList(id: string) {
@@ -68,37 +71,35 @@ export default function NotesPage() {
     if (!userConfirmation) {
       return;
     }
-    const noteToDelete = notes.find(note => note.id === id);
-    if (noteToDelete) {
-      setNotes(notes.filter(note => note.id !== id));
-      deleteNote(noteToDelete.id)
-        .then(() => {
-          if (noteToDelete.id === currentNote?.id) {
-            setCurrentNote(undefined);
-            navigate('/notes');
-          }
-        }).catch(error => {
-        console.error('Error deleting note', error);
+    deleteNote(id)
+      .then(() => {
+        if (currentNote?.id === id) {
+          setCurrentNote(undefined);
+          navigate('/notes');
+        }
+      }).catch(error => {
+      console.error('Error deleting note', error);
+    }).finally(() => {
+      getNotes().then(ns => {
+        setNotes(ns);
       });
-    }
+    });
   }
 
   function updateOrCreateNote(note: Note): void {
-    const noteIndex = notes.findIndex(n => n.id === note.id);
-    if (noteIndex !== -1) {
-      const newNotes = [...notes];
-      newNotes[noteIndex] = note;
-      setNotes(newNotes);
-    }
     updateNote(note)
       .catch((error: NoteApiClientError) => {
         if (error.code === NoteApiErrorCode.NOT_FOUND) {
           const userConfirmation = window.confirm('It seams this note was removed. Do you want to create new one with this data?');
           if (userConfirmation) {
-            selectOrCreateNote(note.name, note.content);
+            createNewNote(note.name, note.content);
           }
         }
-      });
+      }).finally(() =>
+      getNotes().then(ns => {
+        setNotes(ns);
+      })
+    );
   }
 
   return <div className="fixed top-14 left-64 bottom-0 right-0">
