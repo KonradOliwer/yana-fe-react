@@ -6,7 +6,7 @@ import { Note } from './api';
 
 export default function NotesList({ notes, createNewNote: createOrOpenNote, deleteNote, changeCurrentNote }: {
   notes: Note[],
-  createNewNote: (name: string) => void,
+  createNewNote: (name: string, content: string | undefined) => void,
   deleteNote: (noteId: string) => void,
   changeCurrentNote: (note: Note) => void
 }) {
@@ -15,7 +15,7 @@ export default function NotesList({ notes, createNewNote: createOrOpenNote, dele
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     let name = formData.get('name') as string;
-    createOrOpenNote(name);
+    createOrOpenNote(name, undefined);
   }
 
   return <aside id="logo-sidebar"

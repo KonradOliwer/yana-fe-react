@@ -20,18 +20,25 @@ export default function NotesPage() {
     }).catch(error => {
       console.error('Error fetching notes', error);
     });
+  }, []);
+
+  useEffect(() => {
+    let note = notes.find(note => note.id === noteId);
+    if (note) {
+      setCurrentNote(note);
+    }
   }, [noteId]);
 
   function changeCurrentNote(note: Note) {
     navigate(`/notes/${note.id}`);
   }
 
-  function createNewNoteAndAddToList(name: string) {
+  function createNewNoteAndAddToList(name: string, content: string | undefined) {
     const note = notes.find(note => note.name === name.trim());
     if (!note) {
       addNote({
         name: name.trim(),
-        content: ''
+        content: content ? content : ''
       })
         .then(note => {
           changeCurrentNote(note);
@@ -77,11 +84,10 @@ export default function NotesPage() {
     }
     updateNote(note)
       .catch((error: NoteApiClientError) => {
-        //TODO: this doesn't work - fix it; we get 404 thrown into logs and no more handling
-        if (error.code === NoteApiErrorCode.ALREADY_EXISTS) {
+        if (error.code === NoteApiErrorCode.NOT_FOUND) {
           const userConfirmation = window.confirm('It seams this note was removed. Do you want to create new one with this data?');
           if (userConfirmation) {
-            createNewNoteAndAddToList(note.name);
+            createNewNoteAndAddToList(note.name, note.content);
           }
         }
       });
