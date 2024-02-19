@@ -2,13 +2,14 @@ import React from 'react';
 
 
 import { Note } from './api';
+import { Link } from 'react-router-dom';
 
 
-export default function NotesList({ notes, createNewNote: createOrOpenNote, deleteNote, changeCurrentNote }: {
+export default function NotesList({ notes, createNewNote: createOrOpenNote, deleteNote, currentNoteId }: {
   notes: Note[],
   createNewNote: (name: string, content: string | undefined) => void,
   deleteNote: (noteId: string) => void,
-  changeCurrentNote: (note: Note) => void
+  currentNoteId: string | undefined
 }) {
 
   function addNoteClick(event: React.FormEvent<HTMLFormElement>) {
@@ -47,10 +48,12 @@ export default function NotesList({ notes, createNewNote: createOrOpenNote, dele
                   <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18 18 6m0 12L6 6" />
                 </svg>
               </button>
-              <div onClick={e => changeCurrentNote(note)}
-                   className="w-full hover:bg-gray-100 dark:hover:bg-gray-700">
-                <span className="ms-3 whitespace-nowrap">{note.name ? note.name : (<i>Unnamed</i>)}</span>
-              </div>
+              <Link to={`/notes/${note.id}`}
+                    className="w-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                <span
+                  className={`ms-3 whitespace-nowrap ${currentNoteId === note.id ? 'font-bold text-cyan-700 dark:text-cyan-200' : ''}`}>{note.name ? note.name : (
+                  <i>Unnamed</i>)}</span>
+              </Link>
             </div>
           </li>
         )}

@@ -5,7 +5,7 @@ export default function MainTopBar() {
     <div className="px-3 py-3 lg:px-5 lg:pl-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center justify-start rtl:justify-end dark:text-white ">
-          Yana (Yet another note app)
+          Yana (Yet another notes app)
         </div>
         <div className="flex items-center">
           <div className="flex items-center ms-3">

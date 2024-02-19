@@ -43,7 +43,8 @@ export interface Note {
 
 export const getNotes = async (): Promise<Note[]> => {
   const response = await fetch(`${HOST}/notes`);
-  return await response.json() as Note[];
+  let responseJson = await response.json();
+  return responseJson as Note[];
 };
 
 export const addNote = async (body: { name: string, content: string }): Promise<Note> => {
@@ -56,19 +57,27 @@ export const addNote = async (body: { name: string, content: string }): Promise<
   }));
   let responseJson = await response.json();
   if (response.status === 400) {
-    if (typeof responseJson === 'string') {
-      responseJson = JSON.parse(responseJson);
-    }
     throw new NoteApiClientError(responseJson);
   }
   return responseJson as Note;
 };
 
-export const getNote = async (id: string): Promise<Note> => {
-  const response = await fetch(`${HOST}/notes/${id}`);
+export const getNoteByName = async (name: string): Promise<Note> => {
+  const response = await fetch(`${HOST}/notes?name=${encodeURIComponent(name)}`);
   let responseJson = await response.json();
-  // throwClientErrorIfApplicable(response.status, responseJson);
-  return responseJson as Note;
+  throwClientErrorIfApplicable(response.status, responseJson);
+  let notes = responseJson as Note[];
+  if (notes.length === 0) {
+    throw new NoteApiClientError({
+      code: NoteApiErrorCode.NOT_FOUND
+    });
+  } else if (notes.length > 1) {
+    // There is constraint of unique name in the database, so this will only happen if BE changes without FE change
+    throw new NoteApiClientError({
+      code: NoteApiErrorCode.UNKNOWN_NOTE_ERROR_CODE
+    });
+  }
+  return notes[0];
 };
 
 export const updateNote = async (note: Note): Promise<Note> => {

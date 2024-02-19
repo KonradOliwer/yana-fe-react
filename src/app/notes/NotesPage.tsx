@@ -2,7 +2,7 @@ import NotesListSidebar from './NotesList';
 import NotePage from './note/NotePage';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { addNote, deleteNote, getNotes, Note, NoteApiClientError, NoteApiErrorCode, updateNote } from './api';
+import { addNote, deleteNote, getNoteByName, getNotes, Note, NoteApiClientError, NoteApiErrorCode, updateNote } from './api';
 
 export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -27,31 +27,39 @@ export default function NotesPage() {
     if (note) {
       setCurrentNote(note);
     }
-  }, [noteId]);
+  }, [noteId, notes]);
 
-  function changeCurrentNote(note: Note) {
-    navigate(`/notes/${note.id}`);
-  }
-
-  function createNewNoteAndAddToList(name: string, content: string | undefined) {
+  function selectOrCreateNote(name: string, content: string | undefined) {
     const note = notes.find(note => note.name === name.trim());
     if (!note) {
-      addNote({
-        name: name.trim(),
-        content: content ? content : ''
-      })
-        .then(note => {
-          changeCurrentNote(note);
-        }).catch((error: NoteApiClientError) => {
-        if (error.code === NoteApiErrorCode.ALREADY_EXISTS) {
-          console.info('Note already exists. Please refresh page to see it.');
-          // TODO this should refresh list. Note we do not want to lose any currently opened and removed notes
+      getNoteByName(name.trim()).then(n => {
+        setNotes([...notes, n]);
+        setCurrentNote(n);
+        navigate(`/notes/${n.id}`);
+      }).catch((error: NoteApiClientError) => {
+        if (error.code !== NoteApiErrorCode.NOT_FOUND) {
+          console.error('Error fetching note', error);
         }
-      }).catch(error => {
-        console.error('Unknown error while creating note', error);
+        addNote({
+          name: name.trim(),
+          content: content ? content : ''
+        }).then(n => {
+          setNotes([...notes, n]);
+          navigate(`/notes/${n.id}`);
+        }).catch((error: NoteApiClientError) => {
+          if (error.code === NoteApiErrorCode.ALREADY_EXISTS) {
+            // This could happen if:
+            // 1. user intentionally tries to break system by very quickly switching tabs and removing something in fly
+            // 2. user has connections issues
+            //TODO: system should support second case - display toastr with infor about issue
+            console.info('Note already exists. Please refresh page to see it.');
+          }
+        }).catch(error => {
+          console.error('Unknown error while creating note', error);
+        });
       });
     } else {
-      changeCurrentNote(note);
+      navigate(`/notes/${note.id}`);
     }
   }
 
@@ -87,15 +95,14 @@ export default function NotesPage() {
         if (error.code === NoteApiErrorCode.NOT_FOUND) {
           const userConfirmation = window.confirm('It seams this note was removed. Do you want to create new one with this data?');
           if (userConfirmation) {
-            createNewNoteAndAddToList(note.name, note.content);
+            selectOrCreateNote(note.name, note.content);
           }
         }
       });
   }
 
   return <div className="fixed top-14 left-64 bottom-0 right-0">
-    <NotesListSidebar notes={notes} createNewNote={createNewNoteAndAddToList} deleteNote={deleteNoteAndRemoveFromList}
-                      changeCurrentNote={changeCurrentNote} />
+    <NotesListSidebar notes={notes} createNewNote={selectOrCreateNote} deleteNote={deleteNoteAndRemoveFromList} currentNoteId={currentNote?.id} />
     <NotePage note={currentNote} saveNoteChanges={updateOrCreateNote} />
   </div>;
 }
