@@ -54,7 +54,6 @@ export default function NotesPage() {
     getNotes().then(ns => {
       setNotes(ns);
       let note = ns.find(note => note.name === trimmedName);
-      console.log('note', note);
       if (note) {
         setCurrentNote(note);
         navigate(`/notes/${note.id}`);
