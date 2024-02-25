@@ -6,9 +6,17 @@ import { BrowserRouter } from 'react-router-dom';
 jest.mock('@uiw/react-md-editor', () => {
   return {
     __esModule: true,
-    default: ({ height, value, onChange }: { height: string, value: string, onChange: (content: string) => void }) => {
+    default: ({
+      height,
+      value,
+      onChange,
+    }: {
+      height: string;
+      value: string;
+      onChange: (content: string) => void;
+    }) => {
       return <div></div>;
-    }
+    },
   };
 });
 
