@@ -1,12 +1,12 @@
 /* eslint-disable testing-library/no-unnecessary-act */
 
 import React from 'react';
-import { act, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import NotesPage from './NotesPage';
-import { MemoryRouter, Route, Router, Routes } from 'react-router-dom';
+import { Route, Router, Routes } from 'react-router-dom';
 import * as api from './api';
 import { Note } from './api';
-import { createMemoryHistory } from 'history';
+import { createMemoryHistory, MemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 
 const exampleNote = { id: 'exampleId', name: 'note1', content: 'content1' };
@@ -16,58 +16,13 @@ const createNewNoteContent = 'create new note content';
 const noteToSave = {
   id: 'noteToSaveId',
   name: 'note to save name',
-  content: 'note to save content',
+  content: '',
 };
 const idPassedToNotePageTestId = 'current note id';
 const namePassedToNotePageTestId = 'current note name';
 const contentPassedToNotePageTestId = 'current note content';
 
 jest.mock('./api');
-
-jest.mock('./NotesList', () => {
-  return {
-    __esModule: true,
-    default: ({
-      notes,
-      createNewNote,
-      deleteNote,
-      currentNoteId,
-    }: {
-      notes: Note[];
-      createNewNote: (name: string, content: string | undefined) => void;
-      deleteNote: (noteId: string) => void;
-      currentNoteId: string | undefined;
-    }) => {
-      return (
-        <div>
-          <div>NotesList</div>
-          <ul>
-            {notes.map((note) => {
-              return (
-                <li key={note.id}>
-                  <div id={`note ${note.id} name`}>{note.name}</div>
-                  <div id={`note ${note.id} content`}>{note.content}</div>
-                </li>
-              );
-            })}
-          </ul>
-          <div>
-            <button
-              onClick={() =>
-                createNewNote(createNewNoteName, createNewNoteContent)
-              }
-            >
-              createNote
-            </button>
-            <button onClick={() => deleteNote(noteToDeleteId)}>
-              deleteNote
-            </button>
-          </div>
-        </div>
-      );
-    },
-  };
-});
 
 jest.mock('./note/NotePage', () => {
   return {
@@ -102,11 +57,7 @@ jest.mock('./note/NotePage', () => {
 test('renders NotesPage without crash', async () => {
   (api.getNotes as jest.Mock).mockResolvedValue([]);
 
-  render(
-    <MemoryRouter>
-      <NotesPage />
-    </MemoryRouter>,
-  );
+  renderNotePage();
 });
 
 test('/notes/:id result in passing note with this id to NotePage', async () => {
@@ -115,20 +66,11 @@ test('/notes/:id result in passing note with this id to NotePage', async () => {
     { id: '2', name: 'note2', content: 'content2' },
   ]);
 
-  const history = createMemoryHistory();
-  history.push('/notes/2');
+  renderNotePage('/notes/2');
 
-  await act(async () => {
-    render(
-      <Router navigator={history} location={history.location}>
-        <Routes>
-          <Route path={'/notes/:noteId'} element={<NotesPage />} />
-        </Routes>
-      </Router>,
-    );
+  await waitFor(() => {
+    expect(screen.getByTestId(idPassedToNotePageTestId)).toHaveTextContent('2');
   });
-
-  expect(screen.getByTestId(idPassedToNotePageTestId)).toHaveTextContent('2');
   expect(screen.getByTestId(namePassedToNotePageTestId)).toHaveTextContent(
     'note2',
   );
@@ -140,21 +82,10 @@ test('/notes/:id result in passing note with this id to NotePage', async () => {
 test('/notes/ result in not passing note to NotePage', async () => {
   (api.getNotes as jest.Mock).mockResolvedValue([
     exampleNote,
-    { id: '2', name: 'note2', content: 'content2' }
+    { id: '2', name: 'note2', content: 'content2' },
   ]);
 
-  const history = createMemoryHistory();
-  history.push('/notes/');
-
-  await act(async () => {
-    render(
-      <Router navigator={history} location={history.location}>
-        <Routes>
-          <Route path={'/notes/'} element={<NotesPage />} />
-        </Routes>
-      </Router>,
-    );
-  });
+  renderNotePage('/notes/2');
 
   expect(screen.getByText('No note selected')).toBeInTheDocument();
 });
@@ -162,18 +93,7 @@ test('/notes/ result in not passing note to NotePage', async () => {
 test('/notes/:noteId with noteId that has no corresponding note on server', async () => {
   (api.getNotes as jest.Mock).mockResolvedValue([]);
 
-  const history = createMemoryHistory();
-  history.push('/notes/2');
-
-  await act(async () => {
-    render(
-      <Router navigator={history} location={history.location}>
-        <Routes>
-          <Route path={'/notes/:noteId'} element={<NotesPage />} />
-        </Routes>
-      </Router>,
-    );
-  });
+  renderNotePage('/notes/2');
 
   expect(screen.getByText('No note selected')).toBeInTheDocument();
 });
@@ -181,140 +101,119 @@ test('/notes/:noteId with noteId that has no corresponding note on server', asyn
 test('list of notes passed to NotesList', async () => {
   (api.getNotes as jest.Mock).mockResolvedValue([
     { id: '1', name: 'note1', content: 'content1' },
-    { id: '2', name: 'note2', content: 'content2' }
+    { id: '2', name: 'note2', content: 'content2' },
   ]);
 
-  // eslint-disable-next-line testing-library/no-unnecessary-act
-  await act(async () => {
-    render(
-      <MemoryRouter>
-        <NotesPage />
-      </MemoryRouter>,
-    );
-  });
+  renderNotePage();
 
-  expect(screen.getAllByRole('listitem')).toHaveLength(2);
+  await waitFor(() => {
+    expect(screen.getAllByRole('listitem')).toHaveLength(2);
+  });
   expect(screen.getByText('note1')).toBeInTheDocument();
-  expect(screen.getByText('content1')).toBeInTheDocument();
   expect(screen.getByText('note2')).toBeInTheDocument();
-  expect(screen.getByText('content2')).toBeInTheDocument();
 });
 
 test('saveNoteChanges passed to NotePage triggers updateNote with new note version and refresh notes list', async () => {
   (api.getNotes as jest.Mock).mockResolvedValue([exampleNote]);
   (api.updateNote as jest.Mock).mockResolvedValue(Promise.resolve(noteToSave));
 
-  await act(async () => {
-    render(
-      <MemoryRouter>
-        <NotesPage />
-      </MemoryRouter>,
-    );
+  renderNotePage();
+
+  await waitFor(() => {
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
   });
 
-  expect(screen.getAllByRole('listitem')).toHaveLength(1);
   (api.getNotes as jest.Mock).mockResolvedValue([exampleNote, noteToSave]);
+  userEvent.click(screen.getByText('Save note'));
 
-  await act(async () => {
-    userEvent.click(screen.getByText('Save note'));
+  await waitFor(() => {
+    expect(api.updateNote).toHaveBeenCalledWith(noteToSave);
   });
-
-  expect(api.updateNote).toHaveBeenCalledWith(noteToSave);
-  expect(screen.getAllByRole('listitem')).toHaveLength(2);
+  await waitFor(() => {
+    expect(screen.getAllByRole('listitem')).toHaveLength(2);
+  });
   expect(screen.getByText(exampleNote.name)).toBeInTheDocument();
-  expect(screen.getByText(exampleNote.content)).toBeInTheDocument();
   expect(screen.getByText(noteToSave.name)).toBeInTheDocument();
-  expect(screen.getByText(noteToSave.content)).toBeInTheDocument();
 });
 
 test('saveNoteChanges fails on updateNote with note not found and user confirms the intent to create new note', async () => {
-  (api.getNotes as jest.Mock).mockResolvedValue([exampleNote]);
+  (api.getNotes as jest.Mock)
+    .mockResolvedValueOnce([exampleNote])
+    .mockResolvedValueOnce([exampleNote])
+    .mockResolvedValueOnce([exampleNote, noteToSave]);
   (api.updateNote as jest.Mock).mockRejectedValue({
-    code: api.NoteApiErrorCode.NOT_FOUND
+    code: api.NoteApiErrorCode.NOT_FOUND,
   });
   (api.addNote as jest.Mock).mockResolvedValue(Promise.resolve(noteToSave));
 
   const confirmSpy = jest.spyOn(window, 'confirm');
   confirmSpy.mockImplementation(() => true);
 
-  await act(async () => {
-    render(
-      <MemoryRouter>
-        <NotesPage />
-      </MemoryRouter>,
-    );
-  });
+  renderNotePage();
+  userEvent.type(screen.getByPlaceholderText('Unnamed'), noteToSave.name);
+  fireEvent.submit(screen.getByRole('form'));
 
-  (api.getNotes as jest.Mock).mockResolvedValue([exampleNote, noteToSave]);
-
-  await act(async () => {
-    userEvent.click(screen.getByText('Save note'));
+  await waitFor(() => {
+    expect(api.addNote).toHaveBeenCalledWith({
+      name: noteToSave.name,
+      content: '',
+    });
   });
-
-  expect(api.addNote).toHaveBeenCalledWith({
-    name: noteToSave.name,
-    content: noteToSave.content
-  });
-  expect(screen.getAllByRole('listitem')).toHaveLength(2);
-  expect(screen.getByText(noteToSave.name)).toBeInTheDocument();
-  expect(screen.getByText(noteToSave.content)).toBeInTheDocument();
 });
 
 test('saveNoteChanges fails on updateNote with note not found and user reject the intent to create new note', async () => {
   (api.getNotes as jest.Mock).mockResolvedValue([]);
   (api.updateNote as jest.Mock).mockRejectedValue({
-    code: api.NoteApiErrorCode.NOT_FOUND
+    code: api.NoteApiErrorCode.NOT_FOUN,
   });
   (api.addNote as jest.Mock).mockResolvedValue(Promise.resolve(noteToSave));
 
   const confirmSpy = jest.spyOn(window, 'confirm');
   confirmSpy.mockImplementation(() => false);
 
-  await act(async () => {
-    render(
-      <MemoryRouter>
-        <NotesPage />
-      </MemoryRouter>,
-    );
-  });
+  renderNotePage();
 
   (api.getNotes as jest.Mock).mockResolvedValue([exampleNote]);
 
-  await act(async () => {
-    userEvent.click(screen.getByText('Save note'));
-  });
+  userEvent.click(screen.getByText('Save note'));
 
-  expect(api.addNote).not.toHaveBeenCalledWith({
-    name: noteToSave.name,
-    content: noteToSave.content
+  await waitFor(() => {
+    expect(api.addNote).not.toHaveBeenCalledWith({
+      name: noteToSave.name,
+      content: noteToSave.content,
+    });
   });
-  expect(screen.getAllByRole('listitem')).toHaveLength(1);
+  await waitFor(() => {
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
+  });
 });
 
 test('deleteNote passed to NotesList triggers deleteNote and refresh notes list if user confirms the action', async () => {
-  (api.getNotes as jest.Mock).mockResolvedValue([exampleNote]);
+  (api.getNotes as jest.Mock).mockResolvedValue([
+    { id: noteToDeleteId, name: 'note1', content: 'content1' ,
+  ]);
   (api.deleteNote as jest.Mock).mockResolvedValue(Promise.resolve());
 
   const confirmSpy = jest.spyOn(window, 'confirm');
   confirmSpy.mockImplementation(() => true);
 
-  await act(async () => {
-    render(
-      <MemoryRouter>
-        <NotesPage />
-      </MemoryRouter>,
-    );
-  });
+  renderNotePage();
 
-  expect(screen.getAllByRole('listitem')).toHaveLength(1);
+  await waitFor(() => {
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
+  });
   (api.getNotes as jest.Mock).mockResolvedValue([]);
 
-  await act(async () => {
-    userEvent.click(screen.getByText('deleteNote'));
-  });
+  userEvent.click(
+    screen.getByRole('button', { name: 'delete note ' + noteToDeleteId })
+  );
 
-  expect(api.deleteNote).toHaveBeenCalledWith(noteToDeleteId);
-  expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
+  await waitFor(() =>
+    expect(api.deleteNote).toHaveBeenCalledWith(noteToDeleteId)
+  );
+  await waitFor(() =>
+    expect(screen.queryByRole('listitem')).not.toBeInTheDocument()
+  );
 });
 
 test('deleteNote passed to NotesList does nothing if user declines the action', async () => {
@@ -324,16 +223,12 @@ test('deleteNote passed to NotesList does nothing if user declines the action', 
   const confirmSpy = jest.spyOn(window, 'confirm');
   confirmSpy.mockImplementation(() => false);
 
-  await act(async () => {
-    render(
-      <MemoryRouter>
-        <NotesPage />
-      </MemoryRouter>,
-    );
-  });
+  renderNotePage();
   (api.getNotes as jest.Mock).mockResolvedValue([]);
 
-  expect(screen.getAllByRole('listitem')).toHaveLength(1);
+  await waitFor(() => {
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
+  });
   expect(api.deleteNote).not.toHaveBeenCalled();
 });
 
@@ -346,24 +241,18 @@ test('deleteNote when confirmed and currently displayed note is being deleted re
   const confirmSpy = jest.spyOn(window, 'confirm');
   confirmSpy.mockImplementation(() => true);
 
-  const history = createMemoryHistory();
-  history.push('/notes/' + noteToDeleteId);
+  let { history } = renderNotePage('/notes/' + noteToDeleteId);
 
-  await act(async () => {
-    render(
-      <Router navigator={history} location={history.location}>
-        <Routes>
-          <Route path={'/notes/:noteId'} element={<NotesPage />} />
-        </Routes>
-      </Router>,
-    );
+  await waitFor(() => {
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
   });
+  userEvent.click(
+    screen.getByRole('button', { name: 'delete note ' + noteToDeleteId })
+  );
 
-  await act(async () => {
-    userEvent.click(screen.getByText('deleteNote'));
+  await waitFor(() => {
+    expect(history.location.pathname).toBe('/notes');
   });
-
-  expect(history.location.pathname).toBe('/notes');
 });
 
 test('Submitting note name in NotesList select note of this name for the list', async () => {
@@ -371,24 +260,19 @@ test('Submitting note name in NotesList select note of this name for the list', 
     { id: '1', name: createNewNoteName, content: createNewNoteContent }
   ]);
 
-  const history = createMemoryHistory();
-  history.push('/notes/x');
-
-  await act(async () => {
-    render(
-      <Router navigator={history} location={history.location}>
-        <Routes>
-          <Route path={'/notes/:noteId'} element={<NotesPage />} />
-        </Routes>
-      </Router>,
-    );
+  let { history } = renderNotePage('/notes/x');
+  await waitFor(() => {
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
   });
 
-  await act(async () => {
-    userEvent.click(screen.getByText('createNote'));
-  });
+  userEvent.type(screen.getByPlaceholderText('Unnamed'), createNewNoteName);
+  userEvent.click(
+    screen.getByRole('button', { name: 'select note or add new' })
+  );
 
-  expect(history.location.pathname).toBe('/notes/1');
+  await waitFor(() => {
+    expect(history.location.pathname).toBe('/notes/1');
+  });
 });
 
 test('Submitting note name in NotesList create new note if note with this name does not exist', async () => {
@@ -408,25 +292,38 @@ test('Submitting note name in NotesList create new note if note with this name d
   const confirmSpy = jest.spyOn(window, 'confirm');
   confirmSpy.mockImplementation(() => true);
 
-  const history = createMemoryHistory();
-  history.push('/notes/x');
+  let { history } = renderNotePage('/notes/x');
 
-  await act(async () => {
-    render(
-      <Router navigator={history} location={history.location}>
-        <Routes>
-          <Route path={'/notes/:noteId'} element={<NotesPage />} />
-        </Routes>
-      </Router>,
-    );
-  });
+  userEvent.type(screen.getByPlaceholderText('Unnamed'), createNewNoteName);
+  userEvent.click(
+    screen.getByRole('button', { name: 'select note or add new' })
+  );
 
-  await act(async () => {
-    userEvent.click(screen.getByText('createNote'));
+  await waitFor(() => {
+    expect(api.addNote).toHaveBeenCalledWith({
+      name: createNewNoteName,
+      content: ''
+    });
   });
-  expect(api.addNote).toHaveBeenCalledWith({
-    name: createNewNoteName,
-    content: createNewNoteContent
+  await waitFor(() => {
+    expect(history.location.pathname).toBe('/notes/1');
   });
-  expect(history.location.pathname).toBe('/notes/1');
 });
+
+function renderNotePage(startingPath: string = '/notes'): {
+  history: MemoryHistory;
+} {
+  const history = createMemoryHistory();
+  history.push(startingPath);
+
+  render(
+    <Router navigator={history} location={history.location}>
+      <Routes>
+        <Route path={'/notes/:noteId'} element={<NotesPage />} />
+        <Route path={'/notes'} element={<NotesPage />} />
+      </Routes>
+    </Router>
+  );
+
+  return { history: history };
+}

@@ -1,4 +1,4 @@
-import NotesListSidebar from './NotesList';
+import NotesListSidebar from './NotesListSidebar';
 import NotePage from './note/NotePage';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -118,7 +118,7 @@ export default function NotesPage() {
     <div className="fixed top-14 left-64 bottom-0 right-0">
       <NotesListSidebar
         notes={notes}
-        createNewNote={selectOrCreateNote}
+        selectOrCreate={selectOrCreateNote}
         deleteNote={deleteNoteAndRemoveFromList}
         currentNoteId={currentNote?.id}
       />
