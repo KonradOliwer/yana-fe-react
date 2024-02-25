@@ -130,10 +130,10 @@ test('/notes/:id result in passing note with this id to NotePage', async () => {
 
   expect(screen.getByTestId(idPassedToNotePageTestId)).toHaveTextContent('2');
   expect(screen.getByTestId(namePassedToNotePageTestId)).toHaveTextContent(
-    'note2,
+    'note2',
   );
   expect(screen.getByTestId(contentPassedToNotePageTestId)).toHaveTextContent(
-    'content2'
+    'content2,
   );
 });
 
