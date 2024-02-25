@@ -48,16 +48,15 @@ test('renders note content when note is defined', async () => {
   await waitFor(() => {
     expect(screen.getByTestId('MDEditor input')).toHaveDisplayValue(
       'Test Content',
-    ;
+    );
   });
 });
 
 test('renders "No note selected" when note is undefined', async () => {
   render(
     <Router>
-      <NotePage note={undefined} saveNoteChanges={(note) => {
-      }} />
-    </Router>
+      <NotePage note={undefined} saveNoteChanges={(note) => {}} />
+    </Router>,
   );
 
   await waitFor(() => {
@@ -71,7 +70,7 @@ test('saveNoteChanges is called with correct values when button is pressed', asy
   render(
     <Router>
       <NotePage note={note} saveNoteChanges={mockSaveNoteChanges} />
-    </Router>
+    </Router>,
   );
 
   // Simulate button press
@@ -83,7 +82,7 @@ test('saveNoteChanges is called with correct values when button is pressed', asy
     expect(mockSaveNoteChanges).toHaveBeenCalledWith({
       id: '1',
       name: 'Test Note',
-      content: 'Test Content'
+      content: 'Test Content',
     });
   });
 });
@@ -94,7 +93,7 @@ test('saveNoteChanges is called with new value after inputs are changed', async 
   render(
     <Router>
       <NotePage note={note} saveNoteChanges={mockSaveNoteChanges} />
-    </Router>
+    </Router>,
   );
 
   // Simulate name change
@@ -118,7 +117,7 @@ test('saveNoteChanges is called with new value after inputs are changed', async 
     expect(mockSaveNoteChanges).toHaveBeenCalledWith({
       id: '1',
       name: 'Updated Note',
-      content: 'Updated Content'
+      content: 'Updated Content',
     });
   });
 });
