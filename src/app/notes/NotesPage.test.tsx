@@ -31,7 +31,7 @@ jest.mock('./NotesList', () => {
       notes,
       createNewNote,
       deleteNote,
-      currentNoteI,
+      currentNoteId,
     }: {
       notes: Note[];
       createNewNote: (name: string, content: string | undefined) => void;
@@ -112,7 +112,7 @@ test('renders NotesPage without crash', async () => {
 test('/notes/:id result in passing note with this id to NotePage', async () => {
   (api.getNotes as jest.Mock).mockResolvedValue([
     exampleNote,
-    { id: '2', name: 'note2', content: 'content2' ,
+    { id: '2', name: 'note2', content: 'content2' },
   ]);
 
   const history = createMemoryHistory();
@@ -130,7 +130,7 @@ test('/notes/:id result in passing note with this id to NotePage', async () => {
 
   expect(screen.getByTestId(idPassedToNotePageTestId)).toHaveTextContent('2');
   expect(screen.getByTestId(namePassedToNotePageTestId)).toHaveTextContent(
-    'note2'
+    'note2,
   );
   expect(screen.getByTestId(contentPassedToNotePageTestId)).toHaveTextContent(
     'content2'
@@ -189,7 +189,7 @@ test('list of notes passed to NotesList', async () => {
     render(
       <MemoryRouter>
         <NotesPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
   });
 
@@ -208,7 +208,7 @@ test('saveNoteChanges passed to NotePage triggers updateNote with new note versi
     render(
       <MemoryRouter>
         <NotesPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
   });
 
@@ -241,7 +241,7 @@ test('saveNoteChanges fails on updateNote with note not found and user confirms 
     render(
       <MemoryRouter>
         <NotesPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
   });
 
@@ -274,7 +274,7 @@ test('saveNoteChanges fails on updateNote with note not found and user reject th
     render(
       <MemoryRouter>
         <NotesPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
   });
 
@@ -302,7 +302,7 @@ test('deleteNote passed to NotesList triggers deleteNote and refresh notes list 
     render(
       <MemoryRouter>
         <NotesPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
   });
 
@@ -328,7 +328,7 @@ test('deleteNote passed to NotesList does nothing if user declines the action', 
     render(
       <MemoryRouter>
         <NotesPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
   });
   (api.getNotes as jest.Mock).mockResolvedValue([]);
