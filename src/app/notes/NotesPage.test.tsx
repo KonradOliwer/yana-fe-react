@@ -190,7 +190,7 @@ test('saveNoteChanges fails on updateNote with note not found and user reject th
 
 test('deleteNote passed to NotesList triggers deleteNote and refresh notes list if user confirms the action', async () => {
   (api.getNotes as jest.Mock).mockResolvedValue([
-    { id: noteToDeleteId, name: 'note1', content: 'content1' ,
+    { id: noteToDeleteId, name: 'note1', content: 'content1' },
   ]);
   (api.deleteNote as jest.Mock).mockResolvedValue(Promise.resolve());
 
@@ -205,7 +205,7 @@ test('deleteNote passed to NotesList triggers deleteNote and refresh notes list 
   (api.getNotes as jest.Mock).mockResolvedValue([]);
 
   userEvent.click(
-    screen.getByRole('button', { name: 'delete note ' + noteToDeleteId })
+    screen.getByRole('button', { name: 'delete note ' + noteToDeleteId },
   );
 
   await waitFor(() =>
