@@ -164,7 +164,7 @@ test('saveNoteChanges fails on updateNote with note not found and user confirms 
 test('saveNoteChanges fails on updateNote with note not found and user reject the intent to create new note', async () => {
   (api.getNotes as jest.Mock).mockResolvedValue([]);
   (api.updateNote as jest.Mock).mockRejectedValue({
-    code: api.NoteApiErrorCode.NOT_FOUN,
+    code: api.NoteApiErrorCode.NOT_FOUND,
   });
   (api.addNote as jest.Mock).mockResolvedValue(Promise.resolve(noteToSave));
 
@@ -209,10 +209,10 @@ test('deleteNote passed to NotesList triggers deleteNote and refresh notes list 
   );
 
   await waitFor(() =>
-    expect(api.deleteNote).toHaveBeenCalledWith(noteToDeleteId)
+    expect(api.deleteNote).toHaveBeenCalledWith(noteToDeleteId),
   );
   await waitFor(() =>
-    expect(screen.queryByRole('listitem')).not.toBeInTheDocument()
+    expect(screen.queryByRole('listitem')).not.toBeInTheDocument(),
   );
 });
 
@@ -322,7 +322,7 @@ function renderNotePage(startingPath: string = '/notes'): {
         <Route path={'/notes/:noteId'} element={<NotesPage />} />
         <Route path={'/notes'} element={<NotesPage />} />
       </Routes>
-    </Router>
+    </Router>,
   );
 
   return { history: history };
