@@ -247,7 +247,7 @@ test('deleteNote when confirmed and currently displayed note is being deleted re
     expect(screen.getAllByRole('listitem')).toHaveLength(1);
   });
   userEvent.click(
-    screen.getByRole('button', { name: 'delete note ' + noteToDeleteId },
+    screen.getByRole('button', { name: 'delete note ' + noteToDeleteId }),
   );
 
   await waitFor(() => {
@@ -257,7 +257,7 @@ test('deleteNote when confirmed and currently displayed note is being deleted re
 
 test('Submitting note name in NotesList select note of this name for the list', async () => {
   (api.getNotes as jest.Mock).mockResolvedValue([
-    { id: '1', name: createNewNoteName, content: createNewNoteContent }
+    { id: '1', name: createNewNoteName, content: createNewNoteContent },
   ]);
 
   let { history } = renderNotePage('/notes/x');
@@ -267,7 +267,7 @@ test('Submitting note name in NotesList select note of this name for the list', 
 
   userEvent.type(screen.getByPlaceholderText('Unnamed'), createNewNoteName);
   userEvent.click(
-    screen.getByRole('button', { name: 'select note or add new' })
+    screen.getByRole('button', { name: 'select note or add new' }),
   );
 
   await waitFor(() => {
@@ -279,14 +279,14 @@ test('Submitting note name in NotesList create new note if note with this name d
   (api.addNote as jest.Mock).mockResolvedValue({
     id: '1',
     name: createNewNoteName,
-    content: createNewNoteContent
+    content: createNewNoteContent,
   });
   (api.getNotes as jest.Mock)
     .mockResolvedValueOnce([exampleNote])
     .mockResolvedValueOnce([exampleNote])
     .mockResolvedValueOnce([
       exampleNote,
-      { id: '1', name: createNewNoteName, content: createNewNoteContent }
+      { id: '1', name: createNewNoteName, content: createNewNoteContent },
     ]);
 
   const confirmSpy = jest.spyOn(window, 'confirm');
@@ -296,13 +296,13 @@ test('Submitting note name in NotesList create new note if note with this name d
 
   userEvent.type(screen.getByPlaceholderText('Unnamed'), createNewNoteName);
   userEvent.click(
-    screen.getByRole('button', { name: 'select note or add new' })
+    screen.getByRole('button', { name: 'select note or add new' }),
   );
 
   await waitFor(() => {
     expect(api.addNote).toHaveBeenCalledWith({
       name: createNewNoteName,
-      content: ''
+      content: '',
     });
   });
   await waitFor(() => {
