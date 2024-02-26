@@ -28,7 +28,7 @@ describe('NotesListSidebar', () => {
           deleteNote={jest.fn()}
           currentNoteId={undefined}
         />
-      </Router,
+      </Router>,
     );
 
     fireEvent.submit(screen.getByRole('form'));
@@ -61,13 +61,13 @@ describe('NotesListSidebar', () => {
         <NotesListSidebar
           notes={[
             { id: '1', name: 'note1', content: 'content1' },
-            { id: '2', name: 'note2', content: 'content2' }
+            { id: '2', name: 'note2', content: 'content2' },
           ]}
           selectOrCreate={jest.fn}
           deleteNote={jest.fn()}
           currentNoteId={'1'}
         />
-      </Router>
+      </Router>,
     );
 
     expect(screen.getAllByRole('listitem')).toHaveLength(2);

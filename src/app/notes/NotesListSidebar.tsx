@@ -73,9 +73,9 @@ function SelectOrCreateBox({
       onSubmit={addOrOpenNoteClick}
     >
       <button
-        name="add-or-open-note"
-        aria-label={'select note o" add new'}
-     "  className="hover:bg-gray-100 dark:hover:bg-gray-700 group mt-3 m-2"
+        name='add-or-open-note'
+        aria-label={'select note or add new'}
+        className="hover:bg-gray-100 dark:hover:bg-gray-700 group mt-3 m-2"
         type="submit"
       >
         <svg

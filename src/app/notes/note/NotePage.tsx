@@ -33,7 +33,7 @@ function EditNoteBox({
   note: Note;
   saveNoteChanges: (nore: Note) => void;
 }) {
-  const [nme, setNameValue] = useState<string>('');
+  const [name, setNameValue] = useState<string>('');
   const [content, setContentValue] = useState<string>('');
 
   useEffect(() => {

@@ -43,21 +43,21 @@ describe('NotePage', () => {
         <NotePage note={note} saveNoteChanges={(note) => {}} />
       </Router>,
     );
-    awai waitFor(() => {
+    await waitFor(() => {
       expect(screen.getByDisplayValue('Test Note')).toBeInTheDocument();
     });
     await waitFor(() => {
       expect(screen.getByTestId('MDEditor input')).toHaveDisplayValue(
         'Test Content',
       );
-    })
+    });
   });
 
   test('renders "No note selected" when note is undefined', async () => {
     render(
       <Router>
         <NotePage note={undefined} saveNoteChanges={(note) => {}} />
-      </Router>
+      </Router>,
     );
 
     await waitFor(() => {
@@ -101,18 +101,14 @@ describe('NotePage', () => {
       // Simulate name change
       const inputName = screen
         .queryAllByRole('textbox')
-        .find(
-          (input) => input.getAttribute('data-testid') !== 'MDEditor input'
-        );
+        .find((input) => input.getAttribute('data-testid') !== 'MDEditor input');
       if (inputName)
         fireEvent.change(inputName, { target: { value: 'Updated Note' } });
 
       // Simulate content change
       const inputContent = screen.getByTestId('MDEditor input');
       if (inputContent)
-        fireEvent.change(inputContent, {
-          target: { value: 'Updated Content' }
-        });
+        fireEvent.change(inputContent, { target: { value: 'Updated Content' } });
 
       // Simulate button press
       const button = screen.getByRole('button');
