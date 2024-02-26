@@ -1,5 +1,4 @@
 import NotesListSidebar from './NotesListSidebar';
-import NotePage from './note/NotePage';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -11,6 +10,8 @@ import {
   NoteApiErrorCode,
   updateNote,
 } from './api';
+import { NoteViewLayout } from './note/NoteViewLayout';
+import { NoteBox } from './note/NoteBox';
 
 export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -35,10 +36,7 @@ export default function NotesPage() {
       content: content ? content : '',
     })
       .then((addedNote) => {
-        setNotes((ns) => [
-          ...ns.filter((note) => note.name !== addedNote.name),
-          addedNote,
-        ]);
+        setNotes((ns) => [...ns.filter((note) => note.name !== addedNote.name), addedNote]);
         navigate(`/notes/${addedNote.id}`);
       })
       .catch((error: NoteApiClientError) => {
@@ -73,9 +71,7 @@ export default function NotesPage() {
   }
 
   function deleteNoteAndRemoveFromList(id: string) {
-    const userConfirmation = window.confirm(
-      'Are you sure you want to delete this note?',
-    );
+    const userConfirmation = window.confirm('Are you sure you want to delete this note?');
     if (!userConfirmation) {
       return;
     }
@@ -122,7 +118,17 @@ export default function NotesPage() {
         deleteNote={deleteNoteAndRemoveFromList}
         currentNoteId={currentNote?.id}
       />
-      <NotePage note={currentNote} saveNoteChanges={updateOrCreateNote} />
+      <NoteViewLayout>
+        {currentNote ? (
+          <NoteBox
+            note={currentNote}
+            saveNoteChanges={updateOrCreateNote}
+            noteId={currentNote.id}
+          />
+        ) : (
+          <>No note selected</>
+        )}
+      </NoteViewLayout>
     </div>
   );
 }

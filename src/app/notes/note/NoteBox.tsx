@@ -1,63 +1,55 @@
-import React, { useEffect, useState } from 'react';
+import { Note } from '../api';
+import React, { useState } from 'react';
 import MDEditor from '@uiw/react-md-editor';
 
-import { Note } from '../api';
-
-export default function NotePage({
+export function NoteBox({
+  // only props with simple type  change can trigger rerender - if this component would use useEffect we wouldn't need separate noreId
+  noteId,
   note,
   saveNoteChanges,
 }: {
-  note: Note | undefined;
-  saveNoteChanges: (nore: Note) => void;
-}) {
-  return (
-    <div className="p-4 sm:ml-64 mt-14 fixed top-0 left-0 bottom-0 right-0" id={note?.id}>
-      <div className="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 w-full h-full">
-        {note ? (
-          <EditNoteBox note={note} saveNoteChanges={saveNoteChanges} />
-        ) : (
-          <>No note selected</>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function EditNoteBox({
-  note,
-  saveNoteChanges,
-}: {
+  noteId: string;
   note: Note;
   saveNoteChanges: (nore: Note) => void;
 }) {
-  const [name, setNameValue] = useState<string>('');
-  const [content, setContentValue] = useState<string>('');
+  const [name, setNameValue] = useState<string | undefined>(undefined);
+  const [content, setContentValue] = useState<string | undefined>(undefined);
 
-  useEffect(() => {
-    setNameValue(note.name);
-    setContentValue(note.content);
-  }, [note]);
+  const currentName = (typeof name === 'undefined' ? note.name : name) ?? '';
+  const currentContent = (typeof content === 'undefined' ? note.content : content) ?? '';
 
   function submitNoteChanges() {
-    saveNoteChanges({ id: note?.id, name: name, content: content } as Note);
+    saveNoteChanges({ id: note?.id, name: currentName, content: currentContent } as Note);
   }
 
-  function handleKeyDownInNameInput(e: React.KeyboardEvent<HTMLInputElement>) {
+  function handleNameInputOnChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setNameValue(e.target.value);
+  }
+
+  function handleNameInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter') submitNoteChanges();
   }
 
+  function handleSaveButtonClicked(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    return submitNoteChanges();
+  }
+
+  function handleContentInputChange(s: string | undefined) {
+    setContentValue(s);
+  }
+
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full" key={`note ${noteId} page`}>
       <div>
         <div className="absolute top-3 left-3 right-28 text-4xl">
           <input
             aria-label="edit note name"
             className="relative  w-full h-full flex-start focus:outline-0 placeholder:italic"
             type="text"
-            value={name ?? ''}
-            placeholder={name ? '' : 'Unnamed'}
-            onChange={(e) => setNameValue(e.target.value)}
-            onKeyDown={handleKeyDownInNameInput}
+            value={currentName}
+            placeholder={currentName ?? 'Unnamed'}
+            onChange={handleNameInputOnChange}
+            onKeyDown={handleNameInputKeyDown}
             maxLength={50}
           />
         </div>
@@ -65,7 +57,7 @@ function EditNoteBox({
           <button
             aria-label="save note"
             className={`border-2 border-black rounded-2xl p-3 shadow-2xl ${name === note.name && content === note.content ? 'bg-white ' : 'bg-blue-300  hover:bg-blue-500'}`}
-            onClick={(e) => submitNoteChanges()}
+            onClick={handleSaveButtonClicked}
           >
             <svg
               className="w-[48px] h-[48px] text-gray-800"
@@ -84,11 +76,7 @@ function EditNoteBox({
         </div>
       </div>
       <div className="absolute left-0 right-0 bottom-0 top-24 ">
-        <MDEditor
-          height="100%"
-          value={content}
-          onChange={(s) => setContentValue(s ?? '')}
-        />
+        <MDEditor height="100%" value={currentContent} onChange={handleContentInputChange} />
       </div>
     </div>
   );

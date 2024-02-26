@@ -1,7 +1,7 @@
 /* eslint-disable testing-library/no-unnecessary-act */
 
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import NotesPage from './NotesPage';
 import { Route, Router, Routes } from 'react-router-dom';
 import * as api from './api';
@@ -148,8 +148,8 @@ test('Saving Note fails on updateNote with note not found and user confirms the 
   confirmSpy.mockImplementation(() => true);
 
   renderNotePage();
-  userEvent.type(screen.getByPlaceholderText('Unnamed'), noteToSave.name);
-  fireEvent.submit(screen.getByRole('form'));
+  userEvent.type(screen.getByRole('textbox', {name:'add or select note'}), noteToSave.name);
+  userEvent.click(screen.getByRole('button', { name: 'select note or add new' }));
 
   await waitFor(() => {
     expect(api.addNote).toHaveBeenCalledWith({
