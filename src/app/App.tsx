@@ -3,12 +3,10 @@ import './App.css';
 import UserTopBar from './notes/MainTopBar';
 import NotesPage from './notes/NotesPage';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import About from './about/about';
+import About from './about/About';
 import { NoPageFound } from './Errors';
 
-
 function App() {
-
   return (
     <div className="App">
       <UserTopBar />

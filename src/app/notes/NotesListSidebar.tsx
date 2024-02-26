@@ -73,7 +73,7 @@ function SelectOrCreateBox({
       onSubmit={addOrOpenNoteClick}
     >
       <button
-        name='add-or-open-note'
+        name="add-or-open-note"
         aria-label={'select note or add new'}
         className="hover:bg-gray-100 dark:hover:bg-gray-700 group mt-3 m-2"
         type="submit"
@@ -105,11 +105,11 @@ function SelectOrCreateBox({
 }
 
 export default function NotesListSidebar({
-                                           notes,
-                                           selectOrCreate: createOrOpenNote,
-                                           deleteNote,
-                                           currentNoteId
-                                         }: {
+  notes,
+  selectOrCreate: createOrOpenNote,
+  deleteNote,
+  currentNoteId,
+}: {
   notes: Note[];
   selectOrCreate: (name: string, content: string | undefined) => void;
   deleteNote: (noteId: string) => void;

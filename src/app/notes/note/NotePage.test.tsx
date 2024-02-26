@@ -72,7 +72,7 @@ describe('NotePage', () => {
       render(
         <Router>
           <NotePage note={note} saveNoteChanges={mockSaveNoteChanges} />
-        </Router>
+        </Router>,
       );
 
       // Simulate button press
@@ -84,7 +84,7 @@ describe('NotePage', () => {
         expect(mockSaveNoteChanges).toHaveBeenCalledWith({
           id: '1',
           name: 'Test Note',
-          content: 'Test Content'
+          content: 'Test Content',
         });
       });
     });
@@ -95,20 +95,24 @@ describe('NotePage', () => {
       render(
         <Router>
           <NotePage note={note} saveNoteChanges={mockSaveNoteChanges} />
-        </Router>
+        </Router>,
       );
 
       // Simulate name change
       const inputName = screen
         .queryAllByRole('textbox')
-        .find((input) => input.getAttribute('data-testid') !== 'MDEditor input');
+        .find(
+          (input) => input.getAttribute('data-testid') !== 'MDEditor input',
+        );
       if (inputName)
         fireEvent.change(inputName, { target: { value: 'Updated Note' } });
 
       // Simulate content change
       const inputContent = screen.getByTestId('MDEditor input');
       if (inputContent)
-        fireEvent.change(inputContent, { target: { value: 'Updated Content' } });
+        fireEvent.change(inputContent, {
+          target: { value: 'Updated Content' },
+        });
 
       // Simulate button press
       const button = screen.getByRole('button');
@@ -119,7 +123,7 @@ describe('NotePage', () => {
         expect(mockSaveNoteChanges).toHaveBeenCalledWith({
           id: '1',
           name: 'Updated Note',
-          content: 'Updated Content'
+          content: 'Updated Content',
         });
       });
     });
