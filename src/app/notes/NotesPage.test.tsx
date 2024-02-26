@@ -5,7 +5,6 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import NotesPage from './NotesPage';
 import { Route, Router, Routes } from 'react-router-dom';
 import * as api from './api';
-import { Note } from './api';
 import { createMemoryHistory, MemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 
@@ -18,41 +17,32 @@ const noteToSave = {
   name: 'note to save name',
   content: '',
 };
-const idPassedToNotePageTestId = 'current note id';
-const namePassedToNotePageTestId = 'current note name';
-const contentPassedToNotePageTestId = 'current note content';
 
 jest.mock('./api');
 
-jest.mock('./note/NotePage', () => {
-  return {
-    __esModule: true,
-    default: ({
-      note,
-      saveNoteChanges,
+jest.mock(
+  '@uiw/react-md-editor',
+  () =>
+    ({
+      height,
+      value,
+      onChange,
     }: {
-      note: Note | undefined;
-      saveNoteChanges: (nore: Note) => void;
+      height: string;
+      value: string;
+      onChange: (content: string) => void;
     }) => {
       return (
         <div>
-          {note ? (
-            <>
-              <div data-testid={idPassedToNotePageTestId}>{note?.id}</div>
-              <div data-testid={namePassedToNotePageTestId}>{note?.name}</div>
-              <div data-testid={contentPassedToNotePageTestId}>
-                {note?.content}
-              </div>
-            </>
-          ) : (
-            <div>No note selected</div>
-          )}
-          <button onClick={() => saveNoteChanges(noteToSave)}>Save note</button>
+          <input
+            data-testid="MDEditor input"
+            defaultValue={value}
+            onChange={(e) => onChange(e.target.value)}
+          />
         </div>
       );
     },
-  };
-});
+);
 
 test('renders NotesPage without crash', async () => {
   (api.getNotes as jest.Mock).mockResolvedValue([]);
@@ -69,14 +59,9 @@ test('/notes/:id result in passing note with this id to NotePage', async () => {
   renderNotePage('/notes/2');
 
   await waitFor(() => {
-    expect(screen.getByTestId(idPassedToNotePageTestId)).toHaveTextContent('2');
+    expect(screen.getByRole('textbox', { name: 'edit note name' })).toHaveValue('note2');
   });
-  expect(screen.getByTestId(namePassedToNotePageTestId)).toHaveTextContent(
-    'note2',
-  );
-  expect(screen.getByTestId(contentPassedToNotePageTestId)).toHaveTextContent(
-    'content2',
-  );
+  expect(await screen.findByTestId('MDEditor input')).toHaveValue('content2');
 });
 
 test('/notes/ result in not passing note to NotePage', async () => {
@@ -113,30 +98,43 @@ test('list of notes passed to NotesList', async () => {
   expect(screen.getByText('note2')).toBeInTheDocument();
 });
 
-test('saveNoteChanges passed to NotePage triggers updateNote with new note version and refresh notes list', async () => {
-  (api.getNotes as jest.Mock).mockResolvedValue([exampleNote]);
-  (api.updateNote as jest.Mock).mockResolvedValue(Promise.resolve(noteToSave));
+test('Saving Note triggers updateNote with new note version and refresh notes list', async () => {
+  const expectedNote = {
+    id: exampleNote.id,
+    name: exampleNote.name + ' updated name',
+    content: exampleNote.content + ' updated content',
+  };
+  (api.getNotes as jest.Mock)
+    .mockResolvedValueOnce([exampleNote])
+    .mockResolvedValueOnce([expectedNote]);
+  (api.updateNote as jest.Mock).mockResolvedValue({});
 
-  renderNotePage();
+  renderNotePage('/notes/' + exampleNote.id);
 
   await waitFor(() => {
     expect(screen.getAllByRole('listitem')).toHaveLength(1);
   });
-
-  (api.getNotes as jest.Mock).mockResolvedValue([exampleNote, noteToSave]);
-  userEvent.click(screen.getByText('Save note'));
+  await waitFor(() => {
+    expect(screen.getByRole('button', { name: 'save note' })).toBeInTheDocument();
+  });
+  userEvent.type(screen.getByRole('textbox', { name: 'edit note name' }), ' updated name');
+  userEvent.type(screen.getByTestId('MDEditor input'), ' updated content');
+  //We want to wait for re-redneding of the input
+  await waitFor(() => {
+    expect(screen.getByRole('textbox', { name: 'edit note name' })).toHaveValue(expectedNote.name);
+  });
+  userEvent.click(screen.getByRole('button', { name: 'save note' }));
 
   await waitFor(() => {
-    expect(api.updateNote).toHaveBeenCalledWith(noteToSave);
+    expect(api.updateNote).toHaveBeenCalledWith(expectedNote);
   });
   await waitFor(() => {
-    expect(screen.getAllByRole('listitem')).toHaveLength(2);
+    expect(screen.getByText(expectedNote.name)).toBeInTheDocument();
   });
-  expect(screen.getByText(exampleNote.name)).toBeInTheDocument();
-  expect(screen.getByText(noteToSave.name)).toBeInTheDocument();
+  expect(screen.getAllByRole('listitem')).toHaveLength(1);
 });
 
-test('saveNoteChanges fails on updateNote with note not found and user confirms the intent to create new note', async () => {
+test('Saving Note fails on updateNote with note not found and user confirms the intent to create new note', async () => {
   (api.getNotes as jest.Mock)
     .mockResolvedValueOnce([exampleNote])
     .mockResolvedValueOnce([exampleNote])
@@ -161,8 +159,8 @@ test('saveNoteChanges fails on updateNote with note not found and user confirms 
   });
 });
 
-test('saveNoteChanges fails on updateNote with note not found and user reject the intent to create new note', async () => {
-  (api.getNotes as jest.Mock).mockResolvedValue([]);
+test('Saving Note fails on updateNote with note not found and user reject the intent to create new note', async () => {
+  (api.getNotes as jest.Mock).mockResolvedValue([exampleNote]);
   (api.updateNote as jest.Mock).mockRejectedValue({
     code: api.NoteApiErrorCode.NOT_FOUND,
   });
@@ -171,11 +169,14 @@ test('saveNoteChanges fails on updateNote with note not found and user reject th
   const confirmSpy = jest.spyOn(window, 'confirm');
   confirmSpy.mockImplementation(() => false);
 
-  renderNotePage();
+  renderNotePage('/notes/' + exampleNote.id);
 
   (api.getNotes as jest.Mock).mockResolvedValue([exampleNote]);
 
-  userEvent.click(screen.getByText('Save note'));
+  await waitFor(() => {
+    expect(screen.getByRole('button', { name: 'save note' })).toBeInTheDocument();
+  });
+  userEvent.click(screen.getByRole('button', { name: 'save note' }));
 
   await waitFor(() => {
     expect(api.addNote).not.toHaveBeenCalledWith({
@@ -204,16 +205,10 @@ test('deleteNote passed to NotesList triggers deleteNote and refresh notes list 
   });
   (api.getNotes as jest.Mock).mockResolvedValue([]);
 
-  userEvent.click(
-    screen.getByRole('button', { name: 'delete note ' + noteToDeleteId }),
-  );
+  userEvent.click(screen.getByRole('button', { name: 'delete note ' + noteToDeleteId }));
 
-  await waitFor(() =>
-    expect(api.deleteNote).toHaveBeenCalledWith(noteToDeleteId),
-  );
-  await waitFor(() =>
-    expect(screen.queryByRole('listitem')).not.toBeInTheDocument(),
-  );
+  await waitFor(() => expect(api.deleteNote).toHaveBeenCalledWith(noteToDeleteId));
+  await waitFor(() => expect(screen.queryByRole('listitem')).not.toBeInTheDocument());
 });
 
 test('deleteNote passed to NotesList does nothing if user declines the action', async () => {
@@ -246,9 +241,7 @@ test('deleteNote when confirmed and currently displayed note is being deleted re
   await waitFor(() => {
     expect(screen.getAllByRole('listitem')).toHaveLength(1);
   });
-  userEvent.click(
-    screen.getByRole('button', { name: 'delete note ' + noteToDeleteId }),
-  );
+  userEvent.click(screen.getByRole('button', { name: 'delete note ' + noteToDeleteId }));
 
   await waitFor(() => {
     expect(history.location.pathname).toBe('/notes');
@@ -266,9 +259,7 @@ test('Submitting note name in NotesList select note of this name for the list', 
   });
 
   userEvent.type(screen.getByPlaceholderText('Unnamed'), createNewNoteName);
-  userEvent.click(
-    screen.getByRole('button', { name: 'select note or add new' }),
-  );
+  userEvent.click(screen.getByRole('button', { name: 'select note or add new' }));
 
   await waitFor(() => {
     expect(history.location.pathname).toBe('/notes/1');
@@ -295,9 +286,7 @@ test('Submitting note name in NotesList create new note if note with this name d
   let { history } = renderNotePage('/notes/x');
 
   userEvent.type(screen.getByPlaceholderText('Unnamed'), createNewNoteName);
-  userEvent.click(
-    screen.getByRole('button', { name: 'select note or add new' }),
-  );
+  userEvent.click(screen.getByRole('button', { name: 'select note or add new' }));
 
   await waitFor(() => {
     expect(api.addNote).toHaveBeenCalledWith({

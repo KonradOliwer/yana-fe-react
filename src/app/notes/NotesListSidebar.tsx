@@ -17,10 +17,7 @@ function NotesList({
       {notes.map((note) => (
         <li key={note.id}>
           <div className="flex w-auto">
-            <button
-              aria-label={`delete note ${note.id}`}
-              onClick={(e) => deleteNote(note.id)}
-            >
+            <button aria-label={`delete note ${note.id}`} onClick={(e) => deleteNote(note.id)}>
               <svg
                 className="w-[18px] h-[18px] text-gray-800 dark:text-white"
                 aria-hidden="true"
@@ -95,6 +92,7 @@ function SelectOrCreateBox({
         </svg>
       </button>
       <input
+        aria-label="add or select note"
         type="text"
         name="name"
         className={`w-auto ml-0 m-4 text-black`}

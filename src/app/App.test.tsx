@@ -20,6 +20,8 @@ jest.mock('@uiw/react-md-editor', () => {
   };
 });
 
-test('renders page without crash', () => {
-  render(<BrowserRouter><App /></BrowserRouter>);
+describe('App', () => {
+  test('renders page without crash', () => {
+    render(<BrowserRouter><App /></BrowserRouter>);
+  });
 });

@@ -1,5 +1,8 @@
 {
-  "semi": true,
-  "singleQuote": true,
-  "max-len": 120
+  "arrowParens": "always",
+  "proseWrap": "always",
+  "printWidth": 100,
+  "endOfLine": "auto",
+  "jsxSingleQuote": false,
+  "singleQuote": true
 }

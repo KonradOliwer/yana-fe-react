@@ -11,10 +11,7 @@ export default function NotePage({
   saveNoteChanges: (nore: Note) => void;
 }) {
   return (
-    <div
-      className="p-4 sm:ml-64 mt-14 fixed top-0 left-0 bottom-0 right-0"
-      id={note?.id}
-    >
+    <div className="p-4 sm:ml-64 mt-14 fixed top-0 left-0 bottom-0 right-0" id={note?.id}>
       <div className="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 w-full h-full">
         {note ? (
           <EditNoteBox note={note} saveNoteChanges={saveNoteChanges} />
@@ -54,7 +51,7 @@ function EditNoteBox({
       <div>
         <div className="absolute top-3 left-3 right-28 text-4xl">
           <input
-            aria-label={'open or add note'}
+            aria-label="edit note name"
             className="relative  w-full h-full flex-start focus:outline-0 placeholder:italic"
             type="text"
             value={name ?? ''}
@@ -66,6 +63,7 @@ function EditNoteBox({
         </div>
         <div className="absolute top-0 right-6  text-end text-4xl">
           <button
+            aria-label="save note"
             className={`border-2 border-black rounded-2xl p-3 shadow-2xl ${name === note.name && content === note.content ? 'bg-white ' : 'bg-blue-300  hover:bg-blue-500'}`}
             onClick={(e) => submitNoteChanges()}
           >
