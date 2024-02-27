@@ -1,6 +1,6 @@
-import { Note } from '../api';
 import { Link } from 'react-router-dom';
 import React from 'react';
+import { Note } from '../model';
 
 export function NotesList({
   notes,

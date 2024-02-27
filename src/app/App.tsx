@@ -5,6 +5,7 @@ import NotesPage from './notes/NotesPage';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import About from './about/About';
 import { NoPageFound } from './Errors';
+import './apiConfig';
 
 function App() {
   return (

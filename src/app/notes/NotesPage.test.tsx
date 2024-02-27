@@ -1,13 +1,12 @@
-/* eslint-disable testing-library/no-unnecessary-act */
-
 import React from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import NotesPage from './NotesPage';
 import { Route, Router, Routes } from 'react-router-dom';
 import * as api from './api';
-import { Note } from './api';
 import { createMemoryHistory, MemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
+import { ErrorCode } from '../apiConfig';
+import { Note } from './model';
 
 jest.mock('./api');
 
@@ -94,12 +93,6 @@ describe('NotesPage', () => {
   });
 
   describe('NotesPage updating current note', () => {
-    const noteToSave = {
-      id: 'noteToSaveId',
-      name: 'note to save name',
-      content: '',
-    };
-
     test('Saving note triggers updateNote with new note version and refresh notes list', async () => {
       const expected = {
         id: exampleNote.id,
@@ -137,7 +130,7 @@ describe('NotesPage', () => {
         .mockResolvedValueOnce([])
         .mockResolvedValueOnce([expected]);
       (api.updateNote as jest.Mock).mockRejectedValue({
-        code: api.NoteApiErrorCode.NOT_FOUND,
+        code: ErrorCode.NOTE_NOT_FOUND,
       });
       (api.addNote as jest.Mock).mockResolvedValue(Promise.resolve(expected));
       mockConfirmPopupUserAnswer(true);
@@ -159,7 +152,7 @@ describe('NotesPage', () => {
     test('Saving Note fails on updateNote with note not found and user reject the intent to create new note', async () => {
       (api.getNotes as jest.Mock).mockResolvedValue([exampleNote]);
       (api.updateNote as jest.Mock).mockRejectedValue({
-        code: api.NoteApiErrorCode.NOT_FOUND,
+        code: ErrorCode.NOTE_NOT_FOUND,
       });
       mockConfirmPopupUserAnswer(false);
 
@@ -201,6 +194,7 @@ describe('NotesPage', () => {
       renderNotePage();
       await waitForNotesListToLoad([noteToDelete]);
 
+      // eslint-disable-next-line testing-library/no-unnecessary-act
       act(() => {
         userEvent.click(screen.getByRole('button', { name: 'delete note ' + noteToDelete.id }));
       });

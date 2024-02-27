@@ -1,6 +1,6 @@
-import { Note } from '../api';
 import React, { useState } from 'react';
 import MDEditor from '@uiw/react-md-editor';
+import { Note } from '../model';
 
 export function NoteBox({
   // only props with simple type  change can trigger rerender - if this component would use useEffect we wouldn't need separate noreId

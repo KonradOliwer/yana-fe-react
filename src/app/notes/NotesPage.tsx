@@ -1,19 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  addNote,
-  deleteNote,
-  getNotes,
-  Note,
-  NoteApiClientError,
-  NoteApiErrorCode,
-  updateNote,
-} from './api';
+import { addNote, deleteNote, getNotes, updateNote } from './api';
 import { NoteViewLayout } from './note/NoteViewLayout';
 import { NoteBox } from './note/NoteBox';
 import NotesListSidebarLayout from './list/NotesListSidebarLayout';
 import { SelectOrCreateNoteBox } from './list/SelectOrCreateNoteBox';
 import { NotesList } from './list/NotesList';
+import { Note } from './model';
+import { ClientError, ErrorCode } from '../apiConfig';
 
 export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -41,8 +35,8 @@ export default function NotesPage() {
         setNotes((ns) => [...ns.filter((note) => note.name !== addedNote.name), addedNote]);
         navigate(`/notes/${addedNote.id}`);
       })
-      .catch((error: NoteApiClientError) => {
-        if (error.code === NoteApiErrorCode.ALREADY_EXISTS) {
+      .catch((error: ClientError) => {
+        if (error.code === ErrorCode.NOTE_ALREADY_EXISTS) {
           // This could happen if:
           // 1. user intentionally tries to break system by very quickly switching tabs and removing something in fly
           // 2. user has connections issues
@@ -95,8 +89,8 @@ export default function NotesPage() {
 
   function updateOrCreateNote(note: Note): void {
     updateNote(note)
-      .catch((error: NoteApiClientError) => {
-        if (error.code === NoteApiErrorCode.NOT_FOUND) {
+      .catch((error: ClientError) => {
+        if (error.code === ErrorCode.NOTE_NOT_FOUND) {
           const userConfirmation = window.confirm(
             'It seams this note was removed. Do you want to create new one with this data?',
           );
