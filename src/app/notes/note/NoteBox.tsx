@@ -47,7 +47,7 @@ export function NoteBox({
             className="relative  w-full h-full flex-start focus:outline-0 placeholder:italic"
             type="text"
             value={currentName}
-            placeholder={currentName ?? 'Unnamed'}
+            placeholder={currentName.trim() === '' ? 'Unnamed' : currentName}
             onChange={handleNameInputOnChange}
             onKeyDown={handleNameInputKeyDown}
             maxLength={50}

@@ -1,18 +1,13 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import NotesListSidebar from './NotesListSidebar';
+import { SelectOrCreateNoteBox } from './SelectOrCreateNoteBox';
 
 describe('NotesListSidebar', () => {
   test('renders without crashing', () => {
     render(
       <Router>
-        <NotesListSidebar
-          notes={[]}
-          selectOrCreate={jest.fn()}
-          deleteNote={jest.fn()}
-          currentNoteId={undefined}
-        />
+        <SelectOrCreateNoteBox selectOrCreate={jest.fn()} />
       </Router>,
     );
     expect(screen.getByRole('form')).toBeInTheDocument();

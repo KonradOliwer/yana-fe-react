@@ -1,4 +1,3 @@
-import NotesListSidebar from './NotesListSidebar';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -12,6 +11,9 @@ import {
 } from './api';
 import { NoteViewLayout } from './note/NoteViewLayout';
 import { NoteBox } from './note/NoteBox';
+import NotesListSidebarLayout from './list/NotesListSidebarLayout';
+import { SelectOrCreateNoteBox } from './list/SelectOrCreateNoteBox';
+import { NotesList } from './list/NotesList';
 
 export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -112,12 +114,16 @@ export default function NotesPage() {
 
   return (
     <div className="fixed top-14 left-64 bottom-0 right-0">
-      <NotesListSidebar
-        notes={notes}
-        selectOrCreate={selectOrCreateNote}
-        deleteNote={deleteNoteAndRemoveFromList}
-        currentNoteId={currentNote?.id}
-      />
+      <NotesListSidebarLayout>
+        <div className="border-2 top-0 left-0">
+          <SelectOrCreateNoteBox selectOrCreate={selectOrCreateNote} />
+        </div>
+        <NotesList
+          notes={notes}
+          deleteNote={deleteNoteAndRemoveFromList}
+          currentNoteId={currentNote?.id}
+        />
+      </NotesListSidebarLayout>
       <NoteViewLayout>
         {currentNote ? (
           <NoteBox
