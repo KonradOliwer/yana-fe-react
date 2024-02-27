@@ -12,13 +12,13 @@
 
 Imediat
 - [x] use userEvent instead of useEvent
+- [x] extract layout components to take meaningful components as children
+- [x] review useEffects and remove unnecessary one
 - [ ] rewrite test to use describe/describes for consistency
 - [ ] use axios for api calls
-- [ ] extract layout components to take meaningful components as children
 - [ ] use custom hook to simplify NotesPage
 - [ ] use change endpoints to be more Backend For Frontend (post create or update by name) instead of PUT
 - [ ] User devserver to run app
-- [x] review useEffects and remove unnecessary one
 - [ ] review and code then clean it up
 
 ## Credits
