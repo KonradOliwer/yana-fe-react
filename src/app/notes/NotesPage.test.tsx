@@ -5,8 +5,8 @@ import { Route, Router, Routes } from 'react-router-dom';
 import * as api from './api';
 import { createMemoryHistory, MemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
-import { ErrorCode } from '../apiConfig';
 import { Note } from './model';
+import { ErrorCode } from '../apiErrors';
 
 jest.mock('./api');
 

@@ -21,6 +21,18 @@ Imediat
 - [ ] User devserver to run app
 - [ ] review and code then clean it up
 
+## packages.json comment
+```json
+  "jest": {
+    "moduleNameMapper": {
+      "^axios$": "axios/dist/node/axios.cjs"
+    }
+  }
+```
+Is the solution for problem described here:
+https://stackoverflow.com/questions/73958968/cannot-use-import-statement-outside-a-module-with-axios
+
+
 ## Credits
 Big thanks for my friend Mateusz all the advices and answering all my questions.
 

@@ -7,7 +7,7 @@ import NotesListSidebarLayout from './list/NotesListSidebarLayout';
 import { SelectOrCreateNoteBox } from './list/SelectOrCreateNoteBox';
 import { NotesList } from './list/NotesList';
 import { Note } from './model';
-import { ClientError, ErrorCode } from '../apiConfig';
+import { ClientError, ErrorCode } from '../apiErrors';
 
 export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
