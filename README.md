@@ -42,6 +42,6 @@ https://stackoverflow.com/questions/73958968/cannot-use-import-statement-outside
 
 ## Credits
 
-Big thanks for my friend Mateusz all the advices and answering all my questions.
+Big thanks for my friend [Mateusz](https://github.com/Mati20041) all the advices and answering all my questions.
 
 Source of icons: https://flowbite.com/icons/
