@@ -1,24 +1,16 @@
-export enum ErrorCode {
-  NOTE_NOT_FOUND = 'NOTE_NOT_FOUND',
-  NOTE_ALREADY_EXISTS = 'NOTE_ALREADY_EXISTS',
+const ERROR_CODES = [ 'UNKNOWN_ERROR_CODE'] as const;
 
-  //default value
-  UNKNOWN_ERROR_CODE = 'UNKNOWN_ERROR_CODE',
-}
-
-export function getNoteApiErrorCode(value: string): ErrorCode {
-  return Object.values(ErrorCode).includes(value as ErrorCode)
-    ? (value as ErrorCode)
-    : ErrorCode.UNKNOWN_ERROR_CODE;
-}
+type ErrorCode = typeof ERROR_CODES[number];
 
 export class ClientError extends Error {
-  code: string;
+  code: ErrorCode;
+  message: string;
 
   constructor(responseJson: { message?: string; code: string }) {
     super(responseJson.message ? responseJson.message : responseJson.code);
     this.name = 'NoteApiError';
-    this.code = getNoteApiErrorCode(responseJson.code);
+    this.message = responseJson.message ? responseJson.message : responseJson.code;
+    this.code = responseJson.code in ERROR_CODES ? responseJson.code as ErrorCode : 'UNKNOWN_ERROR_CODE';
 
     // This line is needed to restore the correct prototype chain.
     Object.setPrototypeOf(this, new.target.prototype);
