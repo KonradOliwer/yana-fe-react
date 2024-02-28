@@ -8,28 +8,16 @@
 - [ ] Save on change with debouncing instead of button click
 - [ ] handle name of note too long for sidebar
 
-Imediat
-
-- [x] use userEvent instead of useEvent
-- [x] extract layout components to take meaningful components as children
-- [x] review useEffects and remove unnecessary one
-- [x] rewrite test to use describe/describes for consistency
-- [x] use axios for api calls
-- [x] use custom hook to simplify NotesPage
-- [ ] use change endpoints to be more Backend For Frontend (post create or update by name) instead of PUT
-- [x] User devserver to run app
-
 ## packages.json comment
 
 ```json
   "jest": {
-"moduleNameMapper": {
-"^axios$": "axios/dist/node/axios.cjs"
-}
-}
+    "moduleNameMapper": {
+      "^axios$": "axios/dist/node/axios.cjs"
+    }
+  }
 ```
-
-Is the solution for problem described here:
+Is a solution for the problem, about which you can read more here:
 https://stackoverflow.com/questions/73958968/cannot-use-import-statement-outside-a-module-with-axios
 
 ## Credits

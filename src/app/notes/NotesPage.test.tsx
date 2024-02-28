@@ -6,7 +6,6 @@ import * as api from './api';
 import { createMemoryHistory, MemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 import { Note } from './model';
-import { ErrorCode } from '../apiErrors';
 
 jest.mock('./api');
 
@@ -34,8 +33,51 @@ jest.mock(
     },
 );
 
-describe('NotesPage', () => {
+//UTILS
+const exampleNote = { id: 'exampleId', name: 'note1', content: 'content1' };
 
+function renderNotePage(startingPath: string = '/notes'): {
+  history: MemoryHistory;
+} {
+  const history = createMemoryHistory();
+  history.push(startingPath);
+
+  render(
+    <Router navigator={history} location={history.location}>
+      <Routes>
+        <Route path={'/notes/:noteId'} element={<NotesPage />} />
+        <Route path={'/notes'} element={<NotesPage />} />
+      </Routes>
+    </Router>,
+  );
+
+  return { history: history };
+}
+
+async function waitForCurrentNoteToLoad() {
+  await waitFor(() => {
+    expect(screen.getByRole('button', { name: 'save note' })).toBeInTheDocument();
+  });
+}
+
+async function waitForNotesListToLoad(initialNotesList: Note[]) {
+  await waitFor(() =>
+    expect(screen.getAllByRole('listitem')).toHaveLength(initialNotesList.length),
+  );
+  for (let note of initialNotesList) {
+    const nameElement = await screen.findByText(note.name);
+    expect(nameElement).toBeInTheDocument();
+  }
+}
+
+function mockConfirmPopupUserAnswer(answer: boolean) {
+  const confirmSpy = jest.spyOn(window, 'confirm');
+  confirmSpy.mockImplementation(() => answer);
+}
+
+//END UTILS
+
+describe('NotesPage', () => {
   test('renders NotesPage without crash', async () => {
     (api.getNotes as jest.Mock).mockResolvedValue([]);
 
@@ -93,79 +135,61 @@ describe('NotesPage', () => {
   });
 
   describe('NotesPage updating current note', () => {
-    test('Saving note triggers updateNote with new note version and refresh notes list', async () => {
-      const expected = {
-        id: exampleNote.id,
-        name: exampleNote.name + ' updated name',
-        content: exampleNote.content + ' updated content',
-      };
-      let initialNotesList = [exampleNote];
-      (api.getNotes as jest.Mock)
-        .mockResolvedValueOnce(initialNotesList)
-        .mockResolvedValueOnce([expected]);
-      (api.updateNote as jest.Mock).mockResolvedValue({});
+    const contentAppend = ' updated content';
+    const nameAppend = ' updated name';
+    const expectedResponse = {
+      id: exampleNote.id,
+      name: exampleNote.name + nameAppend,
+      content: exampleNote.content + contentAppend,
+    };
 
-      renderNotePage('/notes/' + exampleNote.id);
-      await waitForNotesListToLoad(initialNotesList);
-      await waitForCurrentNoteToLoad();
-
-      userEvent.type(screen.getByRole('textbox', { name: 'edit note name' }), ' updated name');
-      userEvent.type(screen.getByTestId('MDEditor input'), ' updated content');
-      expect(screen.getByRole('textbox', { name: 'edit note name' })).toHaveValue(expected.name);
-      userEvent.click(screen.getByRole('button', { name: 'save note' }));
-
-      await waitForNotesListToLoad([expected]);
-      expect(api.updateNote).toHaveBeenCalledWith(expected);
-    });
-
-    test('Saving Note fails on updateNote with note not found and user confirms the intent to create new note', async () => {
+    test('Saving note triggers updateNote with new attributes and refresh notes list', async () => {
       let initialNotes = [exampleNote];
-      const expected = {
-        id: exampleNote.id,
-        name: exampleNote.name + ' updated name',
-        content: exampleNote.content,
-      };
       (api.getNotes as jest.Mock)
         .mockResolvedValueOnce(initialNotes)
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([expected]);
-      (api.updateNote as jest.Mock).mockRejectedValue({
-        code: ErrorCode.NOTE_NOT_FOUND,
-      });
-      (api.addNote as jest.Mock).mockResolvedValue(Promise.resolve(expected));
-      mockConfirmPopupUserAnswer(true);
+        .mockResolvedValueOnce([expectedResponse]);
+      (api.addOrUpdateNote as jest.Mock).mockResolvedValue(expectedResponse);
 
-      renderNotePage(/notes/ + exampleNote.id);
+      const { history } = renderNotePage('/notes/' + exampleNote.id);
       await waitForNotesListToLoad(initialNotes);
       await waitForCurrentNoteToLoad();
 
-      userEvent.type(screen.getByRole('textbox', { name: 'edit note name' }), ' updated name');
+      userEvent.type(screen.getByRole('textbox', { name: 'edit note name' }), nameAppend);
+      userEvent.type(screen.getByTestId('MDEditor input'), contentAppend);
+      expect(screen.getByRole('textbox', { name: 'edit note name' })).toHaveValue(
+        expectedResponse.name,
+      );
       userEvent.click(screen.getByRole('button', { name: 'save note' }));
 
-      await waitForNotesListToLoad([expected]);
-      expect(api.addNote).toHaveBeenCalledWith({
-        name: expected.name,
-        content: expected.content,
+      await waitForNotesListToLoad([expectedResponse]);
+      expect(api.addOrUpdateNote).toHaveBeenCalledWith({
+        name: expectedResponse.name,
+        content: expectedResponse.content,
       });
+      expect(history.location.pathname).toBe('/notes/' + exampleNote.id);
     });
 
-    test('Saving Note fails on updateNote with note not found and user reject the intent to create new note', async () => {
-      (api.getNotes as jest.Mock).mockResolvedValue([exampleNote]);
-      (api.updateNote as jest.Mock).mockRejectedValue({
-        code: ErrorCode.NOTE_NOT_FOUND,
-      });
-      mockConfirmPopupUserAnswer(false);
+    test('Saving Note note removed from the list on second tab', async () => {
+      let initialNotes = [exampleNote];
+      (api.getNotes as jest.Mock)
+        .mockResolvedValueOnce(initialNotes)
+        .mockResolvedValueOnce([expectedResponse]);
+      (api.addOrUpdateNote as jest.Mock).mockResolvedValue(expectedResponse);
 
-      renderNotePage('/notes/' + exampleNote.id);
-      await waitForNotesListToLoad([exampleNote]);
+      const { history } = renderNotePage(/notes/ + exampleNote.id);
+      await waitForNotesListToLoad(initialNotes);
       await waitForCurrentNoteToLoad();
 
+      userEvent.type(screen.getByRole('textbox', { name: 'edit note name' }), nameAppend);
       userEvent.click(screen.getByRole('button', { name: 'save note' }));
 
-      await waitFor(() => {
-        expect(api.getNotes).toHaveBeenCalledTimes(2);
+      await waitForNotesListToLoad([expectedResponse]);
+
+      expect(api.addOrUpdateNote).toHaveBeenCalledWith({
+        name: expectedResponse.name,
+        content: exampleNote.content,
       });
-      expect(api.addNote).not.toBeCalled();
+      expect(history.location.pathname).toBe('/notes/' + exampleNote.id);
     });
   });
 
@@ -246,7 +270,7 @@ describe('NotesPage', () => {
       });
 
       test('Submitting note name in NotesList create new note if note with this name does not exist', async () => {
-        (api.addNote as jest.Mock).mockResolvedValue(providedNote);
+        (api.addOrUpdateNote as jest.Mock).mockResolvedValue(providedNote);
         (api.getNotes as jest.Mock)
           .mockResolvedValueOnce([exampleNote])
           .mockResolvedValueOnce([exampleNote])
@@ -261,7 +285,7 @@ describe('NotesPage', () => {
         userEvent.click(screen.getByRole('button', { name: 'select note or add new' }));
 
         await waitFor(() => {
-          expect(api.addNote).toHaveBeenCalledWith({
+          expect(api.addOrUpdateNote).toHaveBeenCalledWith({
             name: providedNote.name,
             content: '',
           });
@@ -273,46 +297,3 @@ describe('NotesPage', () => {
     });
   });
 });
-
-
-//UTILS
-const exampleNote = { id: 'exampleId', name: 'note1', content: 'content1' };
-
-function renderNotePage(startingPath: string = '/notes'): {
-  history: MemoryHistory;
-} {
-  const history = createMemoryHistory();
-  history.push(startingPath);
-
-  render(
-    <Router navigator={history} location={history.location}>
-      <Routes>
-        <Route path={'/notes/:noteId'} element={<NotesPage />} />
-        <Route path={'/notes'} element={<NotesPage />} />
-      </Routes>
-    </Router>,
-  );
-
-  return { history: history };
-}
-
-async function waitForCurrentNoteToLoad() {
-  await waitFor(() => {
-    expect(screen.getByRole('button', { name: 'save note' })).toBeInTheDocument();
-  });
-}
-
-async function waitForNotesListToLoad(initialNotesList: Note[]) {
-  await waitFor(() =>
-    expect(screen.getAllByRole('listitem')).toHaveLength(initialNotesList.length),
-  );
-  for (let note of initialNotesList) {
-    const nameElement = await screen.findByText(note.name);
-    expect(nameElement).toBeInTheDocument();
-  }
-}
-
-function mockConfirmPopupUserAnswer(answer: boolean) {
-  const confirmSpy = jest.spyOn(window, 'confirm');
-  confirmSpy.mockImplementation(() => answer);
-}

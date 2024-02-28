@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { addNote, deleteNote, getNotes, updateNote } from './api';
+import { addOrUpdateNote, deleteNote, getNotes } from './api';
 import { NoteViewLayout } from './note/NoteViewLayout';
 import { NoteBox } from './note/NoteBox';
 import NotesListSidebarLayout from './list/NotesListSidebarLayout';
 import { SelectOrCreateNoteBox } from './list/SelectOrCreateNoteBox';
 import { NotesList } from './list/NotesList';
-import { Note } from './model';
-import { ClientError, ErrorCode } from '../apiErrors';
+import { extractNoteAttributes, Note, NoteAttributes } from './model';
 
 function useRefreshNotes() {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -34,23 +33,11 @@ export default function NotesPage() {
 
   const currentNote = notes.find((note) => note.id === noteId);
 
-  function createNewNote(name: string, content: string | undefined) {
-    addNote({
-      name: name.trim(),
-      content: content ? content : '',
-    })
+  function createOrUpdateNote(noteAttributes: NoteAttributes) {
+    addOrUpdateNote(noteAttributes)
       .then((addedNote) => {
         refreshNotes();
         navigate(`/notes/${addedNote.id}`);
-      })
-      .catch((error: ClientError) => {
-        if (error.code === ErrorCode.NOTE_ALREADY_EXISTS) {
-          // This could happen if:
-          // 1. user intentionally tries to break system by very quickly switching tabs and removing something in fly
-          // 2. user has connections issues
-          //TODO: system should support second case - display toastr with infor about issue
-          console.info('Note already exists. Please refresh page to see it.');
-        }
       })
       .catch((error) => {
         console.error('Unknown error while creating note', error);
@@ -64,7 +51,7 @@ export default function NotesPage() {
     if (note) {
       navigate(`/notes/${note.id}`);
     } else {
-      createNewNote(trimmedName, content);
+      createOrUpdateNote({ name: trimmedName, content: content  ?? ''} as NoteAttributes);
     }
   }
 
@@ -88,18 +75,7 @@ export default function NotesPage() {
   }
 
   function updateOrCreateNote(note: Note): void {
-    updateNote(note)
-      .catch((error: ClientError) => {
-        if (error.code === ErrorCode.NOTE_NOT_FOUND) {
-          const userConfirmation = window.confirm(
-            'It seams this note was removed. Do you want to create new one with this data?',
-          );
-          if (userConfirmation) {
-            createNewNote(note.name, note.content);
-          }
-        }
-      })
-      .finally(() => refreshNotes());
+    createOrUpdateNote(extractNoteAttributes(note));
   }
 
   return (
