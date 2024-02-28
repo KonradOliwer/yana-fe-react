@@ -9,19 +9,27 @@ import { NotesList } from './list/NotesList';
 import { Note } from './model';
 import { ClientError, ErrorCode } from '../apiErrors';
 
-export default function NotesPage() {
+function useRefreshNotes() {
   const [notes, setNotes] = useState<Note[]>([]);
+
+  const refreshNotes = () => {
+    getNotes()
+      .then((notesFromApi) => {
+        setNotes(notesFromApi);
+      })
+      .catch((error) => console.error('Error fetching notes', error));
+  };
+
+  return { notes, refreshNotes };
+}
+
+export default function NotesPage() {
   const { noteId } = useParams() as { noteId: string | null };
   const navigate = useNavigate();
+  const { notes, refreshNotes } = useRefreshNotes(); // use the custom hook
 
   useEffect(() => {
-    getNotes()
-      .then((notes) => {
-        setNotes(notes);
-      })
-      .catch((error) => {
-        console.error('Error fetching notes', error);
-      });
+    refreshNotes();
   }, []);
 
   const currentNote = notes.find((note) => note.id === noteId);
@@ -32,7 +40,7 @@ export default function NotesPage() {
       content: content ? content : '',
     })
       .then((addedNote) => {
-        setNotes((ns) => [...ns.filter((note) => note.name !== addedNote.name), addedNote]);
+        refreshNotes();
         navigate(`/notes/${addedNote.id}`);
       })
       .catch((error: ClientError) => {
@@ -50,20 +58,14 @@ export default function NotesPage() {
   }
 
   function selectOrCreateNote(name: string, content: string | undefined) {
+    refreshNotes();
     let trimmedName = name.trim();
-    getNotes()
-      .then((ns) => {
-        setNotes(ns);
-        let note = ns.find((note) => note.name === trimmedName);
-        if (note) {
-          navigate(`/notes/${note.id}`);
-        } else {
-          createNewNote(trimmedName, content);
-        }
-      })
-      .catch((error) => {
-        console.error('Error fetching notes', error);
-      });
+    let note = notes.find((note) => note.name === trimmedName);
+    if (note) {
+      navigate(`/notes/${note.id}`);
+    } else {
+      createNewNote(trimmedName, content);
+    }
   }
 
   function deleteNoteAndRemoveFromList(id: string) {
@@ -81,9 +83,7 @@ export default function NotesPage() {
         console.error('Error deleting note', error);
       })
       .finally(() => {
-        getNotes().then((ns) => {
-          setNotes(ns);
-        });
+        refreshNotes();
       });
   }
 
@@ -99,11 +99,7 @@ export default function NotesPage() {
           }
         }
       })
-      .finally(() =>
-        getNotes().then((ns) => {
-          setNotes(ns);
-        }),
-      );
+      .finally(() => refreshNotes());
   }
 
   return (

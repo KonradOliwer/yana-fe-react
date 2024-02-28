@@ -16,7 +16,7 @@ Imediat
 - [x] review useEffects and remove unnecessary one
 - [x] rewrite test to use describe/describes for consistency
 - [x] use axios for api calls
-- [ ] use custom hook to simplify NotesPage
+- [x] use custom hook to simplify NotesPage
 - [ ] use change endpoints to be more Backend For Frontend (post create or update by name) instead of PUT
 - [x] User devserver to run app
 
