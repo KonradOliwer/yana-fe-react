@@ -32,7 +32,7 @@ describe('NoteBox', () => {
     render(
       <Router>
         <NoteBox
-          noteId={'id'}
+          key={'id'}
           note={{ id: 'id', name: 'name', content: 'content' }}
           saveNoteChanges={(node) => {}}
         />

@@ -120,11 +120,7 @@ export default function NotesPage() {
       </NotesListSidebarLayout>
       <NoteViewLayout>
         {currentNote ? (
-          <NoteBox
-            note={currentNote}
-            saveNoteChanges={updateOrCreateNote}
-            noteId={currentNote.id}
-          />
+          <NoteBox key={currentNote.id} note={currentNote} saveNoteChanges={updateOrCreateNote} />
         ) : (
           <>No note selected</>
         )}

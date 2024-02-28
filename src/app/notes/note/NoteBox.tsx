@@ -4,11 +4,9 @@ import { Note } from '../model';
 
 export function NoteBox({
   // only props with simple type  change can trigger rerender - if this component would use useEffect we wouldn't need separate noreId
-  noteId,
   note,
   saveNoteChanges,
 }: {
-  noteId: string;
   note: Note;
   saveNoteChanges: (nore: Note) => void;
 }) {
@@ -39,7 +37,7 @@ export function NoteBox({
   }
 
   return (
-    <div className="relative w-full h-full" key={`note ${noteId} page`}>
+    <div className="relative w-full h-full">
       <div>
         <div className="absolute top-3 left-3 right-28 text-4xl">
           <input
