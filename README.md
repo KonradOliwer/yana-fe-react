@@ -18,8 +18,7 @@ Imediat
 - [x] use axios for api calls
 - [ ] use custom hook to simplify NotesPage
 - [ ] use change endpoints to be more Backend For Frontend (post create or update by name) instead of PUT
-- [ ] User devserver to run app
-- [ ] review and code then clean it up
+- [x] User devserver to run app
 
 ## packages.json comment
 ```json
