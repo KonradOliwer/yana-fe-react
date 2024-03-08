@@ -6,6 +6,7 @@ import * as api from './api';
 import { createMemoryHistory, MemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 import { Note } from './model';
+import { ClientError } from '../apiErrors';
 
 jest.mock('./api');
 
@@ -148,7 +149,7 @@ describe('NotesPage', () => {
       (api.getNotes as jest.Mock)
         .mockResolvedValueOnce(initialNotes)
         .mockResolvedValueOnce([expectedResponse]);
-      (api.addOrUpdateNote as jest.Mock).mockResolvedValue(expectedResponse);
+      (api.updateNote as jest.Mock).mockResolvedValue(expectedResponse);
 
       const { history } = renderNotePage('/notes/' + exampleNote.id);
       await waitForNotesListToLoad(initialNotes);
@@ -162,7 +163,8 @@ describe('NotesPage', () => {
       userEvent.click(screen.getByRole('button', { name: 'save note' }));
 
       await waitForNotesListToLoad([expectedResponse]);
-      expect(api.addOrUpdateNote).toHaveBeenCalledWith({
+      expect(api.updateNote).toHaveBeenCalledWith({
+        id: exampleNote.id,
         name: expectedResponse.name,
         content: expectedResponse.content,
       });
@@ -174,7 +176,10 @@ describe('NotesPage', () => {
       (api.getNotes as jest.Mock)
         .mockResolvedValueOnce(initialNotes)
         .mockResolvedValueOnce([expectedResponse]);
-      (api.addOrUpdateNote as jest.Mock).mockResolvedValue(expectedResponse);
+      (api.updateNote as jest.Mock).mockRejectedValue(
+        new ClientError({ code: 'NOTE_NOT_FOUND' }),
+      );
+      (api.addNote as jest.Mock).mockResolvedValue(expectedResponse);
 
       const { history } = renderNotePage(/notes/ + exampleNote.id);
       await waitForNotesListToLoad(initialNotes);
@@ -185,7 +190,12 @@ describe('NotesPage', () => {
 
       await waitForNotesListToLoad([expectedResponse]);
 
-      expect(api.addOrUpdateNote).toHaveBeenCalledWith({
+      expect(api.updateNote).toHaveBeenCalledWith({
+        id: expectedResponse.id,
+        name: expectedResponse.name,
+        content: exampleNote.content,
+      });
+      expect(api.addNote).toHaveBeenCalledWith({
         name: expectedResponse.name,
         content: exampleNote.content,
       });
@@ -270,7 +280,7 @@ describe('NotesPage', () => {
       });
 
       test('Submitting note name in NotesList create new note if note with this name does not exist', async () => {
-        (api.addOrUpdateNote as jest.Mock).mockResolvedValue(providedNote);
+        (api.addNote as jest.Mock).mockResolvedValue(providedNote);
         (api.getNotes as jest.Mock)
           .mockResolvedValueOnce([exampleNote])
           .mockResolvedValueOnce([exampleNote])
@@ -285,7 +295,7 @@ describe('NotesPage', () => {
         userEvent.click(screen.getByRole('button', { name: 'select note or add new' }));
 
         await waitFor(() => {
-          expect(api.addOrUpdateNote).toHaveBeenCalledWith({
+          expect(api.addNote).toHaveBeenCalledWith({
             name: providedNote.name,
             content: '',
           });

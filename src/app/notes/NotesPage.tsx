@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { addOrUpdateNote, deleteNote, getNotes } from './api';
+import { addNote, deleteNote, getNotes, updateNote } from './api';
 import { NoteViewLayout } from './note/NoteViewLayout';
 import { NoteBox } from './note/NoteBox';
 import NotesListSidebarLayout from './list/NotesListSidebarLayout';
 import { SelectOrCreateNoteBox } from './list/SelectOrCreateNoteBox';
 import { NotesList } from './list/NotesList';
 import { extractNoteAttributes, Note, NoteAttributes } from './model';
+import { ClientError } from '../apiErrors';
 
 function useRefreshNotes() {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -33,8 +34,8 @@ export default function NotesPage() {
 
   const currentNote = notes.find((note) => note.id === noteId);
 
-  function createOrUpdateNote(noteAttributes: NoteAttributes) {
-    addOrUpdateNote(noteAttributes)
+  function createNote(note: NoteAttributes) {
+    addNote(note)
       .then((addedNote) => {
         refreshNotes();
         navigate(`/notes/${addedNote.id}`);
@@ -51,7 +52,7 @@ export default function NotesPage() {
     if (note) {
       navigate(`/notes/${note.id}`);
     } else {
-      createOrUpdateNote({ name: trimmedName, content: content  ?? ''} as NoteAttributes);
+      createNote({ name: trimmedName, content: content ?? '' } as NoteAttributes);
     }
   }
 
@@ -75,7 +76,16 @@ export default function NotesPage() {
   }
 
   function updateOrCreateNote(note: Note): void {
-    createOrUpdateNote(extractNoteAttributes(note));
+    updateNote(note)
+      .then((addedNote) => {
+        refreshNotes();
+        navigate(`/notes/${addedNote.id}`);
+      })
+      .catch((error) => {
+        if (error instanceof ClientError && error.code === 'NOTE_NOT_FOUND') {
+          createNote(extractNoteAttributes(note));
+        }
+      });
   }
 
   return (

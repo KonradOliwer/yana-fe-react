@@ -5,8 +5,12 @@ export const getNotes = async (): Promise<Note[]> => {
   return (await axios.get(`/notes`)).data;
 };
 
-export const addOrUpdateNote = async (body: NoteAttributes): Promise<Note> => {
-  return (await axios.post(`/notes`, body)).data;
+export const addNote = async (note: NoteAttributes): Promise<Note> => {
+  return (await axios.post(`/notes`, note)).data;
+};
+
+export const updateNote = async (note: Note): Promise<Note> => {
+  return (await axios.post(`/notes/${note.id}`, note)).data;
 };
 
 export const deleteNote = async (id: string): Promise<void> => {
