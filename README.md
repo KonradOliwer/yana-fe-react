@@ -3,8 +3,8 @@ ___
 This is learning project. So take everything with grain of salt and don't emulate things without a thought.
 
 There are 2 backend implementation for this project
-- [python + Flask + SQLAlchemy]()
-- [go + gin]()
+- [python + Flask + SQLAlchemy](https://github.com/KonradOliwer/yana-be-flask)
+- [go + gin](https://github.com/KonradOliwer/yana-be-gin)
 
 ## # TODO
 This section is a list of functionalities that are required to make it fully functional and usable.
