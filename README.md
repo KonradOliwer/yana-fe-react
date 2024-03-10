@@ -1,4 +1,35 @@
-## \# TODO
+# Yet another notes app
+___
+This is learning project. So take everything with grain of salt and don't emulate things without a thought.
+
+[TODO](#TODO) section is a list of things that would be necessary to do to make a fully functional version of app.
+
+There are 2 backend implementation for this project
+- [python+Flask+SQLAlchemy]()
+- [go+gin]()
+
+
+## Using app
+### Prerequisites
+- [Node.js](https://nodejs.org/en/)
+- npm (comes with Node.js)
+
+### Running the app
+1. Install dependencies
+```bash
+npm install
+```
+
+2. Run the app
+```bash
+npm start
+```
+### Running tests
+```bash
+npm test
+```
+
+## # TODO
 
 - [ ] Add loging and logout
 - [ ] Link user with notes
@@ -7,6 +38,7 @@
 - [ ] Spinner on loading, block sending multiple requests on double click
 - [ ] Save on change with debouncing instead of button click
 - [ ] handle name of note too long for sidebar
+- [ ] handle changing of renaming note to already used name (currently silently fails)
 
 
 ## packages.json comment
