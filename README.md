@@ -2,15 +2,28 @@
 ___
 This is learning project. So take everything with grain of salt and don't emulate things without a thought.
 
-[TODO](#TODO) section is a list of things that would be necessary to do to make a fully functional version of app.
-
 There are 2 backend implementation for this project
-- [python+Flask+SQLAlchemy]()
-- [go+gin]()
+- [python + Flask + SQLAlchemy]()
+- [go + gin]()
 
+## # TODO
+This section is a list of functionalities that are required to make it fully functional and usable.
+
+- [ ] Add loging and logout
+- [ ] Link user with notes
+- [ ] Use toastify to inform user about problem instead of console
+- [ ] Handle user changing page without saving data
+- [ ] Spinner on loading, block sending multiple requests on double click
+- [ ] Save on change with debouncing instead of button click
+- [ ] handle name of note too long for sidebar
+- [ ] handle changing of renaming note to already used name (currently silently fails)
+- [ ] return sorted list of notes from backend
+
+## Functionality
+CRUD for taking notes in markdown
 
 ## Using app
-### Prerequisites
+### Requirements
 - [Node.js](https://nodejs.org/en/)
 - npm (comes with Node.js)
 
@@ -28,18 +41,6 @@ npm start
 ```bash
 npm test
 ```
-
-## # TODO
-
-- [ ] Add loging and logout
-- [ ] Link user with notes
-- [ ] Use toastify to inform user about problem instead of console
-- [ ] Handle user changing page without saving data
-- [ ] Spinner on loading, block sending multiple requests on double click
-- [ ] Save on change with debouncing instead of button click
-- [ ] handle name of note too long for sidebar
-- [ ] handle changing of renaming note to already used name (currently silently fails)
-
 
 ## packages.json comment
 
