@@ -2,9 +2,11 @@
 ___
 This is learning project. So take everything with grain of salt and don't emulate things without a thought.
 
-There are 2 backend implementation for this project
+There are 4 backend implementation for this project
 - [python + Flask + SQLAlchemy](https://github.com/KonradOliwer/yana-be-flask)
 - [go + gin](https://github.com/KonradOliwer/yana-be-gin)
+- [ruby on rails](https://github.com/KonradOliwer/yana-be-rails)
+- [Node.js + NestJS](https://github.com/KonradOliwer/yana-be-nestjs)
 
 ## # TODO
 This section is a list of functionalities that are required to make it fully functional and usable.
