@@ -8,6 +8,8 @@ There are 4 backend implementation for this project
 - [ruby on rails](https://github.com/KonradOliwer/yana-be-rails)
 - [Node.js + NestJS](https://github.com/KonradOliwer/yana-be-nestjs)
 
+Make sure to use same tag version for frontend and backend to ensure compatibility.
+
 ## # TODO
 This section is a list of functionalities that are required to make it fully functional and usable.
 
