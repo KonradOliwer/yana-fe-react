@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { addNote, deleteNote, getNotes, updateNote } from './api';
 import { NoteViewLayout } from './note/NoteViewLayout';
@@ -12,13 +12,13 @@ import { ClientError } from '../apiErrors';
 function useRefreshNotes() {
   const [notes, setNotes] = useState<Note[]>([]);
 
-  const refreshNotes = () => {
+  const refreshNotes = useCallback(() => {
     getNotes()
       .then((notesFromApi) => {
         setNotes(notesFromApi);
       })
       .catch((error) => console.error('Error fetching notes', error));
-  };
+  }, []);
 
   return { notes, refreshNotes };
 }
@@ -30,7 +30,7 @@ export default function NotesPage() {
 
   useEffect(() => {
     refreshNotes();
-  }, []);
+  }, [refreshNotes]);
 
   const currentNote = notes.find((note) => note.id === noteId);
 

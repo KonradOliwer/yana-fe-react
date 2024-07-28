@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { ClientError } from './apiErrors';
 
+axios.defaults.withCredentials = true;
+
 axios.interceptors.response.use(
   function (response) {
     return response;
