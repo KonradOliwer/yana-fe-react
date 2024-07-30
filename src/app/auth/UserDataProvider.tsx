@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { login, LoginRequest, whoAmI } from './api';
+import { login, LoginRequest, logout, whoAmI } from './api';
 
 type AuthOperationResult = 'success' | 'failure';
 type AuthStatus = 'loading' | 'signed in' | 'signed out';
@@ -60,9 +60,13 @@ const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
   );
 
   const signOut = useCallback(async (): Promise<AuthOperationResult> => {
-    // TODO: implement sign out
-    refreshUserStatus().then();
-    return 'failure';
+    try {
+      await logout();
+      refreshUserStatus().then();
+      return 'success';
+    } catch (e) {
+      return 'failure';
+    }
   }, [refreshUserStatus]);
 
   const authContextValue = useMemo(() => {
