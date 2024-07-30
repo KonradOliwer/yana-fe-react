@@ -14,7 +14,11 @@ export interface User {
 }
 
 export const login = async (loginRequest: LoginRequest): Promise<LoginResponse> => {
-  return (await axios.post(`/access-token`, loginRequest)).data;
+  return (await axios.post(`/access-token/login`, loginRequest)).data;
+};
+
+export const logout = async (): Promise<LoginResponse> => {
+  return (await axios.post(`/access-token/logout`)).data;
 };
 
 export const whoAmI = async (): Promise<User> => {
