@@ -2,14 +2,13 @@ import axios from 'axios';
 import { ClientError } from './apiErrors';
 import { provideAutoRefreshTokenHandler } from './auth/apiAuthConfig';
 
-export let clientWithAuth = axios.create();
+export let client = axios.create();
 
-clientWithAuth.defaults.withCredentials = true;
+client.defaults.withCredentials = true;
 
+client.interceptors.request.use(provideAutoRefreshTokenHandler());
 
-clientWithAuth.interceptors.request.use(provideAutoRefreshTokenHandler());
-
-clientWithAuth.interceptors.response.use(
+client.interceptors.response.use(
   function (response) {
     return response;
   },
