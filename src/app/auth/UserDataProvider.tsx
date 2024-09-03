@@ -1,5 +1,6 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { login, LoginRequest, logout, whoAmI } from './api';
+import { rememberTokenExpiration } from './apiAuthConfig';
 
 type AuthOperationResult = 'success' | 'failure';
 type AuthStatus = 'loading' | 'signed in' | 'signed out';
@@ -49,7 +50,8 @@ const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
   const signIn = useCallback(
     async (loginRequest: LoginRequest): Promise<AuthOperationResult> => {
       try {
-        await login(loginRequest);
+        let response = await login(loginRequest);
+        rememberTokenExpiration(response.token_expire_at);
         refreshUserStatus().then();
         return 'success';
       } catch (e) {
