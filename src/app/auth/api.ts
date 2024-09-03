@@ -13,18 +13,20 @@ export interface User {
   username: string;
 }
 
+export let authClient = axios.create();
+
 export const login = async (loginRequest: LoginRequest): Promise<AuthResponse> => {
-  return (await axios.post(`/access-token/login`, loginRequest)).data;
+  return (await authClient.post(`/access-token/login`, loginRequest)).data;
 };
 
 export const logout = async (): Promise<void> => {
-  return (await axios.post(`/access-token/logout`)).data;
+  return (await authClient.post(`/access-token/logout`)).data;
 };
 
 export const refresh = async (): Promise<AuthResponse> => {
-  return (await axios.post(`/access-token/refresh`, {withCredentials:true})).data;
+  return (await authClient.post(`/access-token/refresh`, { withCredentials: true })).data;
 };
 
 export const whoAmI = async (): Promise<User> => {
-  return (await axios.get(`/users/whoami`, {withCredentials:true})).data;
+  return (await authClient.get(`/users/whoami`, { withCredentials: true })).data;
 };
