@@ -4,16 +4,20 @@ This is learning project. So take everything with grain of salt and don't emulat
 
 There are 4 backend implementation for this project
 - [python + Flask + SQLAlchemy](https://github.com/KonradOliwer/yana-be-flask)
-- [go + gin](https://github.com/KonradOliwer/yana-be-gin)
-- [ruby on rails](https://github.com/KonradOliwer/yana-be-rails)
-- [Node.js + NestJS](https://github.com/KonradOliwer/yana-be-nestjs)
+- [go + gin](https://github.com/KonradOliwer/yana-be-gin) (discontinued after v0.1.0)
+- [ruby on rails](https://github.com/KonradOliwer/yana-be-rails) (discontinued after v0.1.0)
+- [Node.js + NestJS](https://github.com/KonradOliwer/yana-be-nestjs) (discontinued after v0.1.0)
 
 Make sure to use same tag version for frontend and backend to ensure compatibility.
+
+## Development decisions
+- Authorisation and authentication ware implemented instead of library usage for learning purposes. I advocate for using widely used solutions for security in business projects
+- JWT was used to expand knowledge about it and challenges it pose to FE. For current list fo features implementation I'd advocate for session based approach for simplicity. 
 
 ## # TODO
 This section is a list of functionalities that are required to make it fully functional and usable.
 
-- [ ] Add loging and logout
+- [x] Add loging and logout
 - [ ] Link user with notes
 - [ ] Use toastify to inform user about problem instead of console
 - [ ] Handle user changing page without saving data
