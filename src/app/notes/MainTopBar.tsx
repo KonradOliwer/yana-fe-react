@@ -18,10 +18,9 @@ export default function MainTopBar() {
           <div className="flex items-center">
             <div className="flex items-center ms-3">
               {userStatus.authStatus === 'signed in' && (
-                <>
-                  <div>{userStatus.userDetails?.username}</div>
-                  <button onClick={performLogout}>logout</button>
-                </>
+                <button className="dark:text-white" onClick={performLogout}>
+                  logout ({userStatus.userDetails?.username})
+                </button>
               )}
             </div>
           </div>
